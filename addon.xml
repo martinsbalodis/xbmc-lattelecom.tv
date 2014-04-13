@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<addon id="helloworld" version="0.0.1" name="000 Lattelecom.tv" provider-name="martinsbalodis">
+	<requires></requires>
+	<extension point="xbmc.python.pluginsource" library="addon.py">
+		<provides>video</provides>
+	</extension>
+	<extension point="xbmc.addon.metadata">
+		<summary>Hello World</summary>
+		<description>Simple program to say hello.</description>
+		<platform>all</platform>
+	</extension>
+</addon>
