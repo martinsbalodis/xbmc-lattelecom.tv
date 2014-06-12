@@ -6,4 +6,5 @@ together from multiple xbmc plugin examples.
 To install it you need to download this repository as zip and extract it into the xbmc addons 
 directory. On raspbmc it is located in ~/.xbmc/addons . After copying the plugin to addons 
 directory restart the player and it should be available. Go to addon settings to input your 
-credentials.
+credentials. Also the extension needs beatifulsoap plugin you can install it by installing 
+`jupiter broadcasting` plugin.
