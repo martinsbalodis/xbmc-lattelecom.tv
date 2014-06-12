@@ -43,7 +43,7 @@ def set_config(key, value):
     return xbmcplugin.setSetting(addon_handle, key, value)
 
 def get_cookiejar_file():
-    cookiejar_file = xbmc.translatePath("special://home/addons/lattelecomtv/resources/cookie.dat")
+    cookiejar_file = xbmc.translatePath("special://temp/lattelecom-tv-cookie.dat")
     return cookiejar_file
 
 def get_cookiejar():
