@@ -114,6 +114,10 @@ def get_channels():
         channel_el =  el.find('span', {'class': 'channel'})
         if channel_el is None:
             continue
+
+        if not el.has_key("data-streamurl"):
+            continue
+
         channel = channel_el.text
 
         channel_info_el =  el.find('span', {'class': 'rinfo'})
