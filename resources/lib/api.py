@@ -18,8 +18,8 @@ def get_url_opener(referrer=None):
     opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookiejar))
     opener.addheaders = [
 
-        #('Referer', 'http://m.ltc.tv/authorization/'),
-        ('Origin', 'http://m.ltc.tv'),
+        #('Referer', 'http://m.lattelecom.tv/authorization/'),
+        ('Origin', 'http://m.lattelecom.tv'),
         # ('Accept-Encoding','gzip,deflate,sdch'),
         ('Accept-Language', 'en-US,en;q=0.8,lv;q=0.6'),
         ('User-Agent',
@@ -43,7 +43,7 @@ def login():
     config.delete_cookiejar()
 
     opener, cookiejar = get_url_opener()
-    response = opener.open('http://m.ltc.tv/authorization')
+    response = opener.open('http://m.lattelecom.tv/authorization')
     response_code = response.getcode()
     if response_code != 200:
         raise Exception("Cannot get session id")
@@ -60,7 +60,7 @@ def login():
         raise Exception("phpsessid not found")
 
     bitrate_cookie = cookielib.Cookie(version=0, name='MobBitr', value='1', port=None, port_specified=False,
-                                      domain='m.ltc.tv', domain_specified=False, domain_initial_dot=False, path='/',
+                                      domain='m.lattelecom.tv', domain_specified=False, domain_initial_dot=False, path='/',
                                       path_specified=True, secure=False, expires=None, discard=True, comment=None,
                                       comment_url=None, rest={'HttpOnly': None}, rfc2109=False)
     cookiejar.set_cookie(bitrate_cookie)
@@ -73,12 +73,12 @@ def login():
         # @TODO maybe retry?
         raise Exception("auth gif not found")
 
-    gif_path = 'http://m.ltc.tv' + match.group(1)
-    opener, cookiejar = get_url_opener('http://m.ltc.tv/authorization')
+    gif_path = 'http://m.lattelecom.tv' + match.group(1)
+    opener, cookiejar = get_url_opener('http://m.lattelecom.tv/authorization')
     opener.open(gif_path)
 
     gif64 = base64.b64encode(gif_path)
-    opener, cookiejar = get_url_opener('http://m.ltc.tv/authorization')
+    opener, cookiejar = get_url_opener('http://m.lattelecom.tv/authorization')
     url = 'https://auth.lattelecom.lv/url/session?sid=' + phpsessid + '&sp=OPT&retUrl=' + gif64 + '='
     opener.open(url)
 
@@ -89,7 +89,7 @@ def login():
     params = urllib.urlencode(dict(login='yes', email=username, passw=password))
     utils.log(params)
 
-    response = opener.open('http://m.ltc.tv/authorization/', params)
+    response = opener.open('http://m.lattelecom.tv/authorization/', params)
     response_text = response.read()
     if re.search('is_logged_in=true', response_text) is None:
         print response_text
@@ -103,34 +103,32 @@ def login():
 def get_channels():
     login()
 
-    url = 'http://m.ltc.tv/tiesraide'
+    url = 'http://m.lattelecom.tv/tiesraide'
     opener, cookiejar = get_url_opener()
     response = opener.open(url)
     response_text = response.read()
     soup = BeautifulSoup(response_text)
 
     channels = []
-    for el in soup.findAll("div", {'class': 'chanel_list_info'}):
-        channel_el =  el.find('span', {'class': 'channel'})
+    for el in soup.findAll("div", "chanel_list_info"):
+        channel_el =  el.find('span', "channel")
         if channel_el is None:
             continue
 
-        if not el.has_key("data-streamurl"):
+        if not el.has_key("data-url"):
             continue
 
         channel = channel_el.text
 
-        channel_info_el =  el.find('span', {'class': 'rinfo'})
+        channel_info_el =  el.find('span', "rinfo")
         if channel_info_el is None:
             channel_info = ""
         else:
             channel_info = channel_info_el.text
 
-        streamurl = el['data-streamurl']
         data_url = el['data-url']
 
         channels.append({
-            'data-streamurl':streamurl,
             'channel': channel,
             'channel-info': channel_info,
             'data-url': data_url
@@ -138,13 +136,21 @@ def get_channels():
 
     return channels
 
-def get_stream_url(streamurl, chan_url):
-    bitrate = "1"
-    url = 'http://m.ltc.tv/free_origin?show_origin=1&type=1&chan=' + chan_url +'&streamurl=' + streamurl + '&bitrate=' + bitrate
+def get_stream_url(data_url):
+
+    url = 'http://m.lattelecom.tv'+data_url
     opener, cookiejar = get_url_opener()
     response = opener.open(url)
     response_text = response.read()
-    return response_text
+    streamurl = response.geturl();
+    return streamurl
+
+    # bitrate = "1"
+    # url = 'http://m.lattelecom.tv/free_origin?show_origin=1&type=1&chan=' + chan_url +'&streamurl=' + streamurl + '&bitrate=' + bitrate
+    # opener, cookiejar = get_url_opener()
+    # response = opener.open(url)
+    # response_text = response.read()
+    # return response_text
 
     #pass
-    #http://m.ltc.tv/free_origin?show_origin=1&type=1&chan=ltv1&streamurl=ltv1_lv&bitrate=1
+    #http://m.lattelecom.tv/free_origin?show_origin=1&type=1&chan=ltv1&streamurl=ltv1_lv&bitrate=1

@@ -22,7 +22,7 @@ def make_channel_list():
             listitem.setInfo('video', { 'title': c['channel-info'] })
 
             ## Build the URL for the program, including the list_info
-            url = "%s?play=true&data_stream_url=%s&data_url=%s" % (sys.argv[0], c['data-streamurl'],  c['data-url'])
+            url = "%s?play=true&data_url=%s" % (sys.argv[0], c['data-url'])
 
             # Add the program item to the list
             ok = xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=url, listitem=listitem, isFolder=False, totalItems=len(channels))
@@ -68,9 +68,9 @@ def play_channel():
 
         params_str = sys.argv[2]
         params = utils.get_url(params_str)
-        data_stream_url = params['data_stream_url']
+        # data_stream_url = params['data_stream_url']
         data_url = params['data_url']
-        rtmp_url = api.get_stream_url(data_stream_url, data_url)
+        rtmp_url = api.get_stream_url(data_url)
 
         listitem=xbmcgui.ListItem(label="video")
         #listitem.setInfo('video', p.get_xbmc_list_item())

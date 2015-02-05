@@ -51,7 +51,7 @@ class TestGet_url_opener(TestCase):
 
         try:
             api.login()
-            stream_url = api.get_stream_url('ltv1_lv', 'ltv1')
+            stream_url = api.get_stream_url("/tiesraide/satori_360tv")
             self.assertIsNotNone(stream_url)
         except Exception as e:
             self.fail(e.message)
