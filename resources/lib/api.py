@@ -18,8 +18,8 @@ def get_url_opener(referrer=None):
     opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookiejar))
     opener.addheaders = [
 
-        #('Referer', 'http://m.lattelecom.tv/authorization/'),
-        ('Origin', 'http://m.lattelecom.tv'),
+        #('Referer', 'https://m.lattelecom.tv/authorization/'),
+        ('Origin', 'https://m.lattelecom.tv'),
         # ('Accept-Encoding','gzip,deflate,sdch'),
         ('Accept-Language', 'en-US,en;q=0.8,lv;q=0.6'),
         ('User-Agent',
@@ -43,7 +43,7 @@ def login():
     config.delete_cookiejar()
 
     opener, cookiejar = get_url_opener()
-    response = opener.open('http://m.lattelecom.tv/authorization')
+    response = opener.open('https://m.lattelecom.tv/authorization')
     response_code = response.getcode()
     if response_code != 200:
         raise Exception("Cannot get session id")
@@ -73,12 +73,12 @@ def login():
         # @TODO maybe retry?
         raise Exception("auth gif not found")
 
-    gif_path = 'http://m.lattelecom.tv' + match.group(1)
-    opener, cookiejar = get_url_opener('http://m.lattelecom.tv/authorization')
+    gif_path = 'https://m.lattelecom.tv' + match.group(1)
+    opener, cookiejar = get_url_opener('https://m.lattelecom.tv/authorization')
     opener.open(gif_path)
 
     gif64 = base64.b64encode(gif_path)
-    opener, cookiejar = get_url_opener('http://m.lattelecom.tv/authorization')
+    opener, cookiejar = get_url_opener('https://m.lattelecom.tv/authorization')
     url = 'https://auth.lattelecom.lv/url/session?sid=' + phpsessid + '&sp=OPT&retUrl=' + gif64 + '='
     opener.open(url)
 
@@ -89,7 +89,7 @@ def login():
     params = urllib.urlencode(dict(login='yes', email=username, passw=password))
     utils.log(params)
 
-    response = opener.open('http://m.lattelecom.tv/authorization/', params)
+    response = opener.open('https://m.lattelecom.tv/authorization/', params)
     response_text = response.read()
     if re.search('is_logged_in=true', response_text) is None:
         print response_text
@@ -103,7 +103,7 @@ def login():
 def get_channels():
     login()
 
-    url = 'http://m.lattelecom.tv/tiesraide'
+    url = 'https://m.lattelecom.tv/tiesraide'
     opener, cookiejar = get_url_opener()
     response = opener.open(url)
     response_text = response.read()
@@ -138,19 +138,21 @@ def get_channels():
 
 def get_stream_url(data_url):
 
-    url = 'http://m.lattelecom.tv'+data_url
+    url = 'https://m.lattelecom.tv'+data_url
     opener, cookiejar = get_url_opener()
     response = opener.open(url)
     response_text = response.read()
-    streamurl = response.geturl();
+    soup = BeautifulSoup(response_text)
+    streamurltag = soup.find(type="application/x-mpegURL")
+    streamurl = streamurltag.get('src')
     return streamurl
 
     # bitrate = "1"
-    # url = 'http://m.lattelecom.tv/free_origin?show_origin=1&type=1&chan=' + chan_url +'&streamurl=' + streamurl + '&bitrate=' + bitrate
+    # url = 'https://m.lattelecom.tv/free_origin?show_origin=1&type=1&chan=' + chan_url +'&streamurl=' + streamurl + '&bitrate=' + bitrate
     # opener, cookiejar = get_url_opener()
     # response = opener.open(url)
     # response_text = response.read()
     # return response_text
 
     #pass
-    #http://m.lattelecom.tv/free_origin?show_origin=1&type=1&chan=ltv1&streamurl=ltv1_lv&bitrate=1
+    #https://m.lattelecom.tv/free_origin?show_origin=1&type=1&chan=ltv1&streamurl=ltv1_lv&bitrate=1
