@@ -18,11 +18,14 @@ def make_channel_list():
         ok = True
         for c in channels:
 
-            listitem = xbmcgui.ListItem(label=c['channel'])
-            listitem.setInfo('video', { 'title': c['channel-info'] })
+            listitem = xbmcgui.ListItem(label=c['name'])
+            listitem.setInfo('video', { 'title': c['name'] })
+            listitem.setIconImage('https://manstv.lattelecom.tv/'+c['logo'])
+
+            listitem.setThumbnailImage('https://manstv.lattelecom.tv/'+c['thumb'])
 
             ## Build the URL for the program, including the list_info
-            url = "%s?play=true&data_url=%s" % (sys.argv[0], c['data-url'])
+            url = "%s?play=true&data_url=%s" % (sys.argv[0], c['id'])
 
             # Add the program item to the list
             ok = xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=url, listitem=listitem, isFolder=False, totalItems=len(channels))

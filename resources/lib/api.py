@@ -1,9 +1,7 @@
 import cookielib, urllib, urllib2
 import sys
 import utils
-import re
-import base64
-from BeautifulSoup import BeautifulSoup
+import json
 
 import config
 
@@ -12,147 +10,134 @@ try:
 except:
     pass
 
+API_ENDPOINT="https://manstv.lattelecom.tv"
 
 def get_url_opener(referrer=None):
-    cookiejar = config.get_cookiejar()
-    opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookiejar))
+    opener = urllib2.build_opener()
+    # Headers from Nexus 6P
     opener.addheaders = [
-
-        #('Referer', 'https://m.lattelecom.tv/authorization/'),
-        ('Origin', 'https://m.lattelecom.tv'),
-        # ('Accept-Encoding','gzip,deflate,sdch'),
-        ('Accept-Language', 'en-US,en;q=0.8,lv;q=0.6'),
         ('User-Agent',
-         'Mozilla/5.0 (iPhone; U; CPU iPhone OS 4_3_2 like Mac OS X; en-us) AppleWebKit/533.17.9 (KHTML, like Gecko) Version/5.0.2 Mobile/8H7 Safari/6533.18.5'),
-        ('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'),
-        ('Cache-Control', 'max-age=0'),
+         'Dalvik/2.1.0 (Linux; U; Android 6.0.1; Nexus 6P Build/MTC19T)'),
         ('Connection', 'keep-alive'),
-        ('DNT', '1'),
     ]
-    if (referrer is not None):
-        opener.addheaders.append(('Referer', referrer))
-
-    return opener, cookiejar
+    return opener
 
 
 def login():
-    logged_in = config.get_config("logged_in")
-    if (logged_in is not None and len(logged_in) > 0):
+    utils.log("User: "+config.get_config("username")+"; Logged in: "+config.get_setting("logged_in")+"; Token: "+config.get_setting("token"))
+    logged_in = config.get_setting("logged_in")
+    if (config.get_setting("token") is not None and config.get_setting("token") != "" and logged_in is not None and logged_in == "true"):
+        utils.log("Already logged in")
         return
 
-    config.delete_cookiejar()
-
-    opener, cookiejar = get_url_opener()
-    response = opener.open('https://m.lattelecom.tv/authorization')
+    opener = get_url_opener()
+    
+    values = {'username' : config.get_config("username"),
+              'uid' : config.get_unique_id(),
+              'password' : config.get_config('password') }
+    
+    response = opener.open(API_ENDPOINT+'/api/v1.4/post/user/login', urllib.urlencode(values))
+    
     response_code = response.getcode()
+    response_text = response.read()
+    
     if response_code != 200:
-        raise Exception("Cannot get session id")
-    response_text = response.read()
+        raise Exception("Got incorrect response code during login. Reponse code: "+response_code+"; Text: "+response_text)
+    
+    json_object = None
+    try:
+        json_object = json.loads(response_text)
+    except ValueError, e:
+        raise Exception("Did not receive json, something wrong: "+response_text)
 
-    if "captcha" in response_text:
-        raise Exception("captcha not implemented")
+    if json_object["status"] == "ko":
+        raise Exception("Failed to log in. Probably wrong username and password. Message: "+response_text)
 
-    phpsessid = None
-    for cookie in cookiejar:
-        if cookie.name == 'PHPSESSID':
-            phpsessid = cookie.value
-    if phpsessid is None:
-        raise Exception("phpsessid not found")
+    utils.log(response_text)
 
-    bitrate_cookie = cookielib.Cookie(version=0, name='MobBitr', value='1', port=None, port_specified=False,
-                                      domain='m.lattelecom.tv', domain_specified=False, domain_initial_dot=False, path='/',
-                                      path_specified=True, secure=False, expires=None, discard=True, comment=None,
-                                      comment_url=None, rest={'HttpOnly': None}, rfc2109=False)
-    cookiejar.set_cookie(bitrate_cookie)
-    cookiejar.save(filename=config.get_cookiejar_file(), ignore_discard=True)
+    config.set_setting("logged_in", "true")
+    config.set_setting("token", json_object["token"])
 
-    # some extra requests for auth (big brother)
-    match = re.search('src="(/auth/[\d]+\.gif)"', response_text)
-    if match is None:
-        config.delete_cookiejar()
-        # @TODO maybe retry?
-        raise Exception("auth gif not found")
-
-    gif_path = 'https://m.lattelecom.tv' + match.group(1)
-    opener, cookiejar = get_url_opener('https://m.lattelecom.tv/authorization')
-    opener.open(gif_path)
-
-    gif64 = base64.b64encode(gif_path)
-    opener, cookiejar = get_url_opener('https://m.lattelecom.tv/authorization')
-    url = 'https://auth.lattelecom.lv/url/session?sid=' + phpsessid + '&sp=OPT&retUrl=' + gif64 + '='
-    opener.open(url)
-
-    # perform real login
-    opener, cookiejar = get_url_opener()
-    username = config.get_config("username")
-    password = config.get_config('password')
-    params = urllib.urlencode(dict(login='yes', email=username, passw=password))
-    utils.log(params)
-
-    response = opener.open('https://m.lattelecom.tv/authorization/', params)
-    response_text = response.read()
-    if re.search('is_logged_in=true', response_text) is None:
-        print response_text
-        raise Exception("login failed")
-
-    cookiejar.save(filename=config.get_cookiejar_file(), ignore_discard=True)
-    config.set_config("logged_in", "yeah!")
-
-    utils.log("login success!")
+    utils.log("Login success! Token: "+config.get_setting("token"))
 
 def get_channels():
     login()
 
-    url = 'https://m.lattelecom.tv/tiesraide'
-    opener, cookiejar = get_url_opener()
+    url = API_ENDPOINT+'/api/v1.4/get/tv/channels'
+    opener = get_url_opener()
     response = opener.open(url)
     response_text = response.read()
-    soup = BeautifulSoup(response_text)
+    response_code = response.getcode()
+    
+    if response_code != 200:
+        raise Exception("Got incorrect response code while requesting channel list. Reponse code: "+response_code+";\nText: "+response_text)
+    
+    json_object = None
+    try:
+        json_object = json.loads(response_text)
+    except ValueError, e:
+        raise Exception("Did not receive json, something wrong: "+response_text)
+
+    if json_object["status"] != "ok":
+        raise Exception("Invalid response: "+response_text)
 
     channels = []
-    for el in soup.findAll("div", "chanel_list_info"):
-        channel_el =  el.find('span', "channel")
-        if channel_el is None:
+    for item in json_object['items']:
+
+        if item["name"] is None:
             continue
-
-        if not el.has_key("data-url"):
+            
+        if item["live"] == "0":
             continue
-
-        channel = channel_el.text
-
-        channel_info_el =  el.find('span', "rinfo")
-        if channel_info_el is None:
-            channel_info = ""
-        else:
-            channel_info = channel_info_el.text
-
-        data_url = el['data-url']
+            
+        if item["streaming_url"] == "":
+            continue
 
         channels.append({
-            'channel': channel,
-            'channel-info': channel_info,
-            'data-url': data_url
+            'id' : item["id"],
+            'name' : item["name"],
+            'logo' : item["logo"],
+            'lang' : item["lang"],
+            'thumb' : item["broadcast_default_picture"],
+            'streaming_url' : item["streaming_url"]
         })
 
     return channels
 
 def get_stream_url(data_url):
 
-    url = 'https://m.lattelecom.tv'+data_url
-    opener, cookiejar = get_url_opener()
+    utils.log("Getting URL for channel: "+data_url)
+    
+    streamurl = None
+    
+    url = API_ENDPOINT+"/api/v1.4/get/content/live-streams/"+data_url+"?include=quality"
+    opener = get_url_opener()
+    opener.addheaders.append(('Authorization', "Bearer "+config.get_setting("token")))
     response = opener.open(url)
+    
     response_text = response.read()
-    soup = BeautifulSoup(response_text)
-    streamurltag = soup.find(type="application/x-mpegURL")
-    streamurl = streamurltag.get('src')
+    response_code = response.getcode()
+    
+    if response_code != 200:
+        config.set_setting("logged_in", "false")
+        raise Exception("Got incorrect response code while requesting stream info. Reponse code: "+response_code+";\nText: "+response_text)
+    
+    json_object = None
+    try:
+        json_object = json.loads(response_text)
+    except ValueError, e:
+        config.set_setting("logged_in", "false")
+        raise Exception("Did not receive json, something wrong: "+response_text)
+
+    for stream in json_object["data"]:
+    
+        if stream["type"] != "live-streams":
+            continue
+
+        # Let's skip low quality streams
+        if "_lq.stream" in stream["id"]:
+            continue
+            
+        streamurl=stream["attributes"]["stream-url"]+"&auth_token=app_"+config.get_setting("token")
+
     return streamurl
-
-    # bitrate = "1"
-    # url = 'https://m.lattelecom.tv/free_origin?show_origin=1&type=1&chan=' + chan_url +'&streamurl=' + streamurl + '&bitrate=' + bitrate
-    # opener, cookiejar = get_url_opener()
-    # response = opener.open(url)
-    # response_text = response.read()
-    # return response_text
-
-    #pass
-    #https://m.lattelecom.tv/free_origin?show_origin=1&type=1&chan=ltv1&streamurl=ltv1_lv&bitrate=1
