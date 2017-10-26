@@ -129,15 +129,26 @@ def get_stream_url(data_url):
         config.set_setting("logged_in", "false")
         raise Exception("Did not receive json, something wrong: "+response_text)
 
+    stream_links = {}
+    
     for stream in json_object["data"]:
     
         if stream["type"] != "live-streams":
             continue
-
-        # Let's skip low quality streams
-        if "_lq.stream" in stream["id"]:
-            continue
             
-        streamurl=stream["attributes"]["stream-url"]+"&auth_token=app_"+config.get_setting("token")
+        url=stream["attributes"]["stream-url"]+"&auth_token=app_"+config.get_setting("token")
+        
+        if "_lq.stream" in stream["id"]:
+            stream_links["3-lq"]=url
+        elif "_mq.stream" in stream["id"]:
+            stream_links["2-mq"]=url
+        elif "_hq.stream" in stream["id"]:
+            stream_links["1-hq"]=url
+        elif "_hd.stream" in stream["id"]:
+            stream_links["0-hd"]=url
+    
+    for key in sorted(stream_links.keys()):
+        streamurl=stream_links[key]
+        break
 
     return streamurl
