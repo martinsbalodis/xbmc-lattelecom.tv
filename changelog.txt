@@ -1,3 +1,7 @@
+0.2.0
+
+- Choose best stream video quality (including HQ and HD)
+
 0.1.0
 
 - Updated to use new mobile application API
