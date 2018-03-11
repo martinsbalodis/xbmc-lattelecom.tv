@@ -5,12 +5,15 @@ import random
 
 try:
     import xbmcaddon, xbmcplugin, xbmc
-except:
-    pass
 
-APPID= xbmcaddon.Addon().getAddonInfo("id")
-NAME = xbmcaddon.Addon().getAddonInfo("name")
-VERSION = xbmcaddon.Addon().getAddonInfo("version")
+    APPID = xbmcaddon.Addon().getAddonInfo("id")
+    NAME = xbmcaddon.Addon().getAddonInfo("name")
+    VERSION = xbmcaddon.Addon().getAddonInfo("version")
+except:
+    APPID = 'id'
+    NAME = 'name'
+    VERSION = 'version'
+    pass
 
 api_version = 383
 
