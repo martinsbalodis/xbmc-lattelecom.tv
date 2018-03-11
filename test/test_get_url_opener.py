@@ -2,18 +2,28 @@ from unittest import TestCase
 from resources.lib import api
 import os
 
-def get_config(key):
-    if key == 'username':
-        return ''
-    elif key == 'password':
-        return ''
-def set_config(key, value):
-    pass
-
 def patch_config():
+
+    # fill in your username and password to run tests
+    settings = {
+        'token': '',
+        'username': '',
+        'password': '',
+        'logged_in': "false",
+        'uid': None,
+    }
+
+    def get_config(key):
+        return settings[key]
+
+    def set_config(key, value):
+        settings[key] = value
+
     from resources.lib.api import config
     config.get_config = get_config
     config.set_config = set_config
+    config.get_setting = get_config
+    config.set_setting = set_config
 
 class TestGet_url_opener(TestCase):
     def test_login_success(self):
