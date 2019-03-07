@@ -1,5 +1,3 @@
-import xbmc
-import xbmcaddon
 import os
 import sys
 
@@ -11,7 +9,6 @@ except:
 
 sys.path.append(os.path.join(current_dir, 'resources', 'lib'))
 
-#import utils, categories, series, programs, play
 import utils, channels
 
 utils.log('Initialised')

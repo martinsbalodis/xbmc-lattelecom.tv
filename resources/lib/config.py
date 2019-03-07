@@ -1,7 +1,6 @@
 import os
-import sys
-import cookielib
 import random
+import sys
 
 try:
     import xbmcaddon, xbmcplugin, xbmc
@@ -24,19 +23,24 @@ try:
 except AttributeError:
     os_string = ''
 
+
 def get_config(key):
     addon_handle = int(sys.argv[1])
     return xbmcplugin.getSetting(addon_handle, key)
+
 
 def set_config(key, value):
     addon_handle = int(sys.argv[1])
     return xbmcplugin.setSetting(addon_handle, key, value)
 
+
 def set_setting(key, value):
     return xbmcaddon.Addon(APPID).setSetting(key, value)
 
+
 def get_setting(key):
     return xbmcaddon.Addon(APPID).getSetting(key)
+
 
 def get_unique_id():
     if get_setting("uid") is not None and get_setting("uid") != "":
@@ -48,8 +52,8 @@ def get_unique_id():
     length = 16
     val = None
     while True:
-       val = ''.join(random.choice(all_chars) for i in range(length))
-       if not val.isdigit():
-           break
+        val = ''.join(random.choice(all_chars) for i in range(length))
+        if not val.isdigit():
+            break
     set_setting("uid", val)
     return val
