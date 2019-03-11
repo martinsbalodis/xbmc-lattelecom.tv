@@ -19,8 +19,8 @@ def make_channel_list():
             listitem = xbmcgui.ListItem(label=c['name'])
             listitem.setInfo('video', {'title': c['name']})
             listitem.setIconImage('https://manstv.lattelecom.tv/' + c['logo'])
-
             listitem.setThumbnailImage('https://manstv.lattelecom.tv/' + c['thumb'])
+            listitem.setProperty('IsPlayable', "true")
 
             # Build the URL for the program, including the list_info
             url = "%s?play=true&data_url=%s" % (sys.argv[0], c['id'])
@@ -42,18 +42,22 @@ def play_channel():
     utils.log("url play channel: " + sys.argv[0])
 
     try:
-
+        handle = int(sys.argv[1])
         params_str = sys.argv[2]
         params = utils.get_url(params_str)
 
         data_url = params['data_url']
         rtmp_url = api.get_stream_url(data_url)
 
-        listitem = xbmcgui.ListItem(label="video")
+        playitem = xbmcgui.ListItem(path=rtmp_url)
+        playitem.setProperty('inputstreamaddon', 'inputstream.adaptive')
+        playitem.setProperty('inputstream.adaptive.manifest_type', 'hls')
+        playitem.setContentLookup(False)
+        xbmcplugin.setResolvedUrl(handle, True, playitem)
 
-        xbmc.Player().play(rtmp_url, listitem)
     except:
         d = xbmcgui.Dialog()
         msg = utils.dialog_error("Unable to fetch listing")
         d.ok(*msg)
         utils.log_error()
+

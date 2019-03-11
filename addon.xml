@@ -2,7 +2,8 @@
 <addon id="lattelecomtv" version="0.2.0" name="Lattelecom Live TV" provider-name="martinsbalodis">
     <requires>
         <import addon="xbmc.python" version="2.14.0" />
-	    <import addon="pvr.iptvsimple" version="3.0.0"/>
+	    <import addon="pvr.iptvsimple" optional="true"/>
+	    <import addon="inputstream.adaptive" optional="true"/>
     </requires>
 	<extension point="xbmc.python.pluginsource" library="addon.py">
 		<provides>video</provides>
