@@ -1,8 +1,12 @@
 import os
+import unittest
 from unittest import TestCase
 
 from lib import api
 
+skip_regional = False
+if "TEST_INTERNATIONAL" in os.environ:
+    skip_regional = True
 
 def patch_config():
     # Fill your username and password to run tests or pass them in environment variables TEST_USER and TEST_PASSWORD
@@ -16,9 +20,9 @@ def patch_config():
         'last_login': "1970-01-01 23:59:00.000000",
     }
 
-    if os.environ['TEST_USER'] is not None:
+    if "TEST_USER" in os.environ:
         settings['username'] = os.environ['TEST_USER']
-    if os.environ['TEST_PASSWORD'] is not None:
+    if "TEST_PASSWORD" in os.environ:
         settings['password'] = os.environ['TEST_PASSWORD']
 
     def get_config(key):
@@ -52,6 +56,7 @@ class TestGet_url_opener(TestCase):
         except Exception as e:
             self.fail(e.message)
 
+    @unittest.skipIf(skip_regional, "Supported only from Latvian IP addresses")
     def test_get_stream_url(self):
         patch_config()
 
