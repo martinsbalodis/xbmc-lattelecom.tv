@@ -1,18 +1,17 @@
-# Lattelecom.tv / Shortcut.lv live TV XBMC/Kodi addon
+# Lattelecom.tv / Shortcut.lv live TV XBMC/Kodi addon [![Build Status](https://travis-ci.org/Janhouse/xbmc-lattelecom.tv.svg?branch=master)](https://travis-ci.org/Janhouse/xbmc-lattelecom.tv)
 
-This is an XBMC/Kodi plugin for lattelecom.tv / shortcut.lv live TV stream.
-To use this you must have an account on lattelecom.tv.
+This is a community maintained unofficial Lattelecom.tv/Shortcut.lv XBMC/Kodi addon.
+**To use it, you must have an account on Lattelecom.tv**.
 
-Currently this plugin uses Shortcut.lv mobile application API.
+_Currently this plugin uses Shortcut.lv mobile application API._
 
 ## Usage
-Install .zip file from Github repository Releases section in XBMC/Kodi.
 
-Or download this repository as zip and extract it into the xbmc/kodi addons 
-directory.
+If you want to receive **automatic updates**, install repository addon from the following link. Then install Lattelecom.tv addon from the repository.
+https://janhouse.github.io/kodi-repo-lattelecomtv/datadir/repository.lattelecomtv/repository.lattelecomtv-1.0.0.zip
 
-On Linux it is located in ~/.xbmc/addons . After copying the plugin to addons 
-directory restart the player and it should be available.
+Alternatively download this repository as a .zip file or download one of the releases from Github's releases section.
+Then install it as .zip file in Kodi addons section.
 
 __Make sure you go to addon settings to input your credentials.__
 
