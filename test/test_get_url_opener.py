@@ -1,12 +1,16 @@
 import os
 import unittest
+import datetime
 from unittest import TestCase
 
-from lib import api
+from lib import api, epg
+
+REGION_NOTICE = "Supported only from Latvian IP addresses"
 
 skip_regional = False
 if "TEST_INTERNATIONAL" in os.environ:
     skip_regional = True
+
 
 def patch_config():
     # Fill your username and password to run tests or pass them in environment variables TEST_USER and TEST_PASSWORD
@@ -56,7 +60,7 @@ class TestGet_url_opener(TestCase):
         except Exception as e:
             self.fail(e.message)
 
-    @unittest.skipIf(skip_regional, "Supported only from Latvian IP addresses")
+    @unittest.skipIf(skip_regional, REGION_NOTICE)
     def test_get_stream_url(self):
         patch_config()
 
@@ -65,5 +69,16 @@ class TestGet_url_opener(TestCase):
             # 101 - LTV 1
             stream_url = api.get_stream_url("101")
             self.assertIsNotNone(stream_url)
+        except Exception as e:
+            self.fail(e.message)
+
+    def test_get_epg(self):
+        patch_config()
+
+        try:
+            date = datetime.date.today().strftime("%Y-%m-%d")
+            epg_data = api.get_epg(date)
+
+            self.assertIsNotNone(epg_data)
         except Exception as e:
             self.fail(e.message)

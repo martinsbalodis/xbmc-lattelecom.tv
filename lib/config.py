@@ -17,6 +17,7 @@ APPID = xbmcaddon.Addon().getAddonInfo("id")
 NAME = xbmcaddon.Addon().getAddonInfo("name")
 VERSION = xbmcaddon.Addon().getAddonInfo("version")
 ICON = xbmcaddon.Addon().getAddonInfo("icon")
+DATADIR=xbmc.translatePath( ADDON.getAddonInfo('profile') )
 
 api_version = 383
 

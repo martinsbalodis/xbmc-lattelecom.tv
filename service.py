@@ -1,6 +1,6 @@
 import xbmc
 
-from lib import api, config, utils, exceptions
+from lib import api, config, utils, exceptions, epg
 
 utils.log("Service started")
 
@@ -18,6 +18,9 @@ if __name__ == '__main__':
         pass
 
     while not monitor.abortRequested():
+
+        if epg.should_update():
+            epg.build_epg()
 
         if monitor.waitForAbort(10):
             break
