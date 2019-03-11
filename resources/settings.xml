@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
-    <category label="Authentification">
-        <setting label="username" type="text"   id="username" default=""/>
-        <setting label="password" type="text"   id="password" option="hidden"  enable="!eq(-1,)" default=""/>
-    </category>
+	<category label="General">
+		<setting label="Lattelecom authentication" type="lsep"/>
+		<setting label="Username" type="text" id="username" default=""/>
+		<setting label="Password" type="text" id="password" option="hidden" enable="!eq(-1,)" default=""/>
+		<setting type="bool" id="logged_in" default="false" visible="false"/>
+		<setting type="bool" id="configured" default="false" visible="false"/>
+		<setting id="last_login" type="text" default="1970-01-01 23:59:00.000000" visible="false"/>
+	</category>
 </settings>

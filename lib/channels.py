@@ -12,7 +12,6 @@ def make_channel_list():
     utils.log("url-make-channel" + sys.argv[0])
 
     try:
-
         channels = api.get_channels()
 
         ok = True
@@ -23,7 +22,7 @@ def make_channel_list():
 
             listitem.setThumbnailImage('https://manstv.lattelecom.tv/' + c['thumb'])
 
-            ## Build the URL for the program, including the list_info
+            # Build the URL for the program, including the list_info
             url = "%s?play=true&data_url=%s" % (sys.argv[0], c['id'])
 
             # Add the program item to the list
