@@ -20,6 +20,9 @@ __Make sure you go to addon settings to input your credentials.__
 
 ![Alt text](/screenshots/nick.png?raw=true "Streaming TV channel")
 
+##Development
+Running tests:
+`python -m unittest test.test_get_url_opener`
+
 ##TODO:
-* Implement EPG
-* Show channel info while streaming
+* Implement EPG #11
