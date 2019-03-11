@@ -1,10 +1,11 @@
+import os
 from unittest import TestCase
 
 from lib import api
 
 
 def patch_config():
-    # fill in your username and password to run tests
+    # Fill your username and password to run tests or pass them in environment variables TEST_USER and TEST_PASSWORD
     settings = {
         'token': '',
         'username': '',
@@ -14,6 +15,11 @@ def patch_config():
         'uid': None,
         'last_login': "1970-01-01 23:59:00.000000",
     }
+
+    if os.environ['TEST_USER'] is not None:
+        settings['username'] = os.environ['TEST_USER']
+    if os.environ['TEST_PASSWORD'] is not None:
+        settings['password'] = os.environ['TEST_PASSWORD']
 
     def get_config(key):
         return settings[key]
@@ -31,6 +37,7 @@ def patch_config():
 class TestGet_url_opener(TestCase):
     def test_login_success(self):
         patch_config()
+
         try:
             api.login()
         except Exception as e:
