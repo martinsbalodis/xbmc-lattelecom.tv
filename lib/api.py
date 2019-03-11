@@ -169,3 +169,30 @@ def get_stream_url(data_url):
         break
 
     return streamurl
+
+
+def get_epg(date):
+    utils.log("Getting EPG for date: " + date)
+    config.login_check()
+
+    url = API_ENDPOINT + "/api/v1.4/get/tv/epg/?daynight=" + date
+    opener = get_url_opener()
+    opener.addheaders.append(('Authorization', "Bearer " + config.get_setting(constants.TOKEN)))
+    response = opener.open(url)
+
+    response_text = response.read()
+    response_code = response.getcode()
+
+    if response_code != 200:
+        config.set_setting_bool(constants.LOGGED_IN, False)
+        raise ApiError(
+            "Got bad response from EPG service. Response code: " + response_code)
+
+    json_object = None
+    try:
+        json_object = json.loads(response_text)
+    except ValueError, e:
+        config.set_setting(constants.LOGGED_IN, False)
+        raise ApiError("Did not receive json, something wrong: " + response_text)
+
+    return json_object

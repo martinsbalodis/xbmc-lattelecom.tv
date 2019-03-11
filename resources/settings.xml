@@ -9,5 +9,10 @@
 		<setting type="bool" id="logged_in" default="false" visible="false"/>
 		<setting type="bool" id="configured" default="false" visible="false"/>
 		<setting id="last_login" type="text" default="1970-01-01 23:59:00.000000" visible="false"/>
+		<setting id="action_configure_epg" type="action" label="Configure PVR IPTVSimple addon automatically"
+		         action="XBMC.RunScript(lattelecomtv,configure_epg)"/>
+		<setting id="action_rebuild_epg" type="action" label="Rebuild EPG data"
+		         action="XBMC.RunScript(lattelecomtv,rebuild_epg)"/>
+		<setting id="last_epg" type="text" default="1970-01-01 23:59:00.000000" visible="false"/>
 	</category>
 </settings>

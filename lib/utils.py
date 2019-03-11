@@ -61,9 +61,8 @@ def isEmpty(param):
         return True
 
 
-def dateFromString(string):
+def dateFromString(string, fmt=DATE_FORMAT):
     # Workaround from https://forum.kodi.tv/showthread.php?tid=112916
-    fmt = DATE_FORMAT
     try:
         res = datetime.datetime.strptime(string, fmt)
     except TypeError:
