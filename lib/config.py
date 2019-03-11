@@ -118,3 +118,10 @@ def login_check():
             pass
     else:
         utils.log("Lattelecom login token seems quite fresh.")
+
+
+def logout():
+    utils.log("Clearing token")
+    set_setting_bool(constants.LOGGED_IN, False)
+    set_setting(constants.TOKEN, "")
+    showGuiNotification("Authorization token cleared")
