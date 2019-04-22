@@ -24,5 +24,10 @@ __Make sure you go to addon settings to input your credentials.__
 Running tests:
 `python -m unittest test.test_get_url_opener`
 
-## TODO:
-* Implement EPG
+Accepted environment variables:
+
+`TEST_INTERNATIONAL` set this value to skip tests that work only from Lattelecom network. (Useful when running automated tests from Travis)
+
+`TEST_PASSWORD` Shortcut.lv password 
+
+`TEST_USER` Shortcut.lv username
