@@ -31,31 +31,31 @@ try disabling this addon.
 
 Legacy channel list when not using TV view
 
-![Alt text](/screenshots/list.png?raw=true "Channel list in Kodi")
+![Alt text](screenshots/list.png?raw=true "Channel list in Kodi")
 
 Timeline in TV section
 
-![Alt text](/screenshots/timeline.png?raw=true "TV timeline in Kodi")
+![Alt text](screenshots/timeline.png?raw=true "TV timeline in Kodi")
 
 Channel view in TV section
 
-![Alt text](/screenshots/channels.png?raw=true "Channels in TV section of Kodi")
+![Alt text](screenshots/channels.png?raw=true "Channels in TV section of Kodi")
 
 TV stream with EPG information
 
-![Alt text](/screenshots/stream.png?raw=true "Stream view in Kodi")
+![Alt text](screenshots/stream.png?raw=true "Stream view in Kodi")
 
 Channel overlay with EPG information
 
-![Alt text](/screenshots/overlay.png?raw=true "Channel overlay in Kodi")
+![Alt text](screenshots/overlay.png?raw=true "Channel overlay in Kodi")
 
 Channel guide overlay
 
-![Alt text](/screenshots/guide.png?raw=true "Channel guide overlay in Kodi")
+![Alt text](screenshots/guide.png?raw=true "Channel guide overlay in Kodi")
 
 Addon settings section
 
-![Alt text](/screenshots/settings.png?raw=true "Addon settings in Kodi")
+![Alt text](screenshots/settings.png?raw=true "Addon settings in Kodi")
 
 ## Development
 Running tests:
