@@ -1,6 +1,7 @@
 import datetime
 from xml.etree import ElementTree
 
+import pytz
 import xbmcgui
 
 import api
@@ -12,7 +13,6 @@ EPG_FILE = "lattelecom-epg.xml"
 M3U_FILE = "channels.m3u"
 
 DATE_FORMAT_JSON = "%Y-%m-%d %H:%M:%S"
-DATE_FORMAT_XML = "%Y%m%d%H%M%S +0200"
 
 from xbmcaddon import Addon
 
@@ -86,12 +86,22 @@ def build_epg():
         xml_chan = ElementTree.SubElement(xml_tv, "channel", id=channel)
         ElementTree.SubElement(xml_chan, "display-name", lang="en").text = ch["name"]
 
+    riga = pytz.timezone('Europe/Riga')
+    offset_seconds = riga.utcoffset(datetime.datetime.utcnow()).seconds
+    offset_hours = offset_seconds / 3600.0
+    offset = "%s%02d00" % (("" if offset_hours < 0 else "+"), offset_hours)
+    date_format_xml = "%Y%m%d%H%M%S " + offset
+
     for item in json_object["items"]:
         xml_prog = ElementTree.SubElement(xml_tv, "programme",
-                                          start=utils.dateFromString(item["time_start"], DATE_FORMAT_JSON).strftime(
-                                              DATE_FORMAT_XML),
-                                          stop=utils.dateFromString(item["time_stop"], DATE_FORMAT_JSON).strftime(
-                                              DATE_FORMAT_XML), channel=item["channel"])
+                                          start=riga.localize(
+                                              utils.dateFromString(item["time_start"], DATE_FORMAT_JSON)).astimezone(
+                                              pytz.utc).strftime(
+                                              date_format_xml),
+                                          stop=riga.localize(
+                                              utils.dateFromString(item["time_stop"], DATE_FORMAT_JSON)).astimezone(
+                                              pytz.utc).strftime(
+                                              date_format_xml), channel=item["channel"])
         ElementTree.SubElement(xml_prog, "title", lang="en").text = item["title"]
 
     indent(xml_tv)

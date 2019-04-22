@@ -5,6 +5,7 @@ import urllib
 import xbmc
 import datetime
 import time
+import _strptime
 
 import config
 
