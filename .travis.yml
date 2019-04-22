@@ -5,6 +5,7 @@ python:
 install:
   - pip install git+https://github.com/romanvm/Kodistubs.git#egg=Kodistubs
   - pip install mock
+  - pip install pytz
 
 branches:
   only:
