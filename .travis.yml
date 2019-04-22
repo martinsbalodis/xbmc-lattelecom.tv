@@ -1,0 +1,17 @@
+language: python
+python:
+- "2.7"
+
+install:
+  - pip install git+https://github.com/romanvm/Kodistubs.git#egg=Kodistubs
+  - pip install mock
+  - pip install pytz
+
+branches:
+  only:
+  - /.*/
+
+jobs:
+  include:
+  - stage: Test
+    script: python -m unittest test.test_get_url_opener
