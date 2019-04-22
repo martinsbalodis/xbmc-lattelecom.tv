@@ -2,6 +2,13 @@ import os
 import unittest
 import datetime
 from unittest import TestCase
+from mock import MagicMock
+
+import sys
+sys.modules['xbmc'] = MagicMock()
+sys.modules['xbmcaddon'] = MagicMock()
+sys.modules['xbmcplugin'] = MagicMock()
+sys.modules['xbmcgui'] = MagicMock()
 
 from lib import api, epg
 

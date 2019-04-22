@@ -1,11 +1,10 @@
 import sys
-import utils
-import api
 
-try:
-    import xbmc, xbmcgui, xbmcplugin
-except ImportError:
-    pass  # for PC debugging
+import xbmcgui
+import xbmcplugin
+
+import api
+import utils
 
 
 def make_channel_list():
