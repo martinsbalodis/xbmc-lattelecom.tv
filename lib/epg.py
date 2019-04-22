@@ -95,12 +95,10 @@ def build_epg():
     for item in json_object["items"]:
         xml_prog = ElementTree.SubElement(xml_tv, "programme",
                                           start=riga.localize(
-                                              utils.dateFromString(item["time_start"], DATE_FORMAT_JSON)).astimezone(
-                                              pytz.utc).strftime(
+                                              utils.dateFromString(item["time_start"], DATE_FORMAT_JSON)).strftime(
                                               date_format_xml),
                                           stop=riga.localize(
-                                              utils.dateFromString(item["time_stop"], DATE_FORMAT_JSON)).astimezone(
-                                              pytz.utc).strftime(
+                                              utils.dateFromString(item["time_stop"], DATE_FORMAT_JSON)).strftime(
                                               date_format_xml), channel=item["channel"])
         ElementTree.SubElement(xml_prog, "title", lang="en").text = item["title"]
 
