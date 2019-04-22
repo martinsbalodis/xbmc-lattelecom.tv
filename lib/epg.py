@@ -101,6 +101,9 @@ def build_epg():
                                               utils.dateFromString(item["time_stop"], DATE_FORMAT_JSON)).strftime(
                                               date_format_xml), channel=item["channel"])
         ElementTree.SubElement(xml_prog, "title", lang="en").text = item["title"]
+        ElementTree.SubElement(xml_prog, "desc", lang="en").text = item["description"]
+        ElementTree.SubElement(xml_prog, "category", lang="en").text = item["category1"]
+        ElementTree.SubElement(xml_prog, "icon", src=api.API_ENDPOINT + "/" + item["url"])
 
     indent(xml_tv)
     xml_str = ElementTree.tostring(xml_tv, encoding="utf-8", method="xml")
