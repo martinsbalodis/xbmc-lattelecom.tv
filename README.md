@@ -27,6 +27,11 @@ restart Kodi and it should work.
 `Inputstream Adaptive` will make switching between channels almost instant. If stream does not work for some reason, 
 try disabling this addon.
 
+### Fixing incorrect EPG time offset
+
+In some cases time zone settings are ignored by Kodi and EPG data is shifted incorrectly. To fix this go to IPTVSimple 
+addon settings, set the correct time shift and then clear EPG databse by going to Kodi `Settings > PVR & Live TV > Guide > Clear data`
+
 ## Screenshots
 
 Legacy channel list when not using TV view
