@@ -138,7 +138,7 @@ def configure_epg():
     <setting id="epgCache">true</setting>
     <setting id="epgPath">{epg_path}</setting>
     <setting id="epgPathType">0</setting>
-    <setting id="epgTimeShift" default="true">0</setting>
+    <setting id="epgTimeShift" default="true">3</setting>
     <setting id="epgTSOverride" default="true">false</setting>
     <setting id="epgUrl" default="true"></setting>
     <setting id="logoBaseUrl">https://manstv.lattelecom.tv/</setting>
