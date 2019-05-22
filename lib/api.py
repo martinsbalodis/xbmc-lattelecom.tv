@@ -20,7 +20,7 @@ def get_url_opener(referrer=None):
     # Headers from Nexus 6P
     opener.addheaders = [
         ('User-Agent',
-         'Dalvik/2.1.0 (Linux; U; Android 6.0.1; Nexus 6P Build/MTC19T)'),
+         'Shortcut.lv for Android TV v1.11.9 / Dalvik/2.1.0 (Linux; U; Android 7.1.1; sdk_google_atv_x86 Build/NYC)'),
         ('Connection', 'keep-alive'),
     ]
     return opener
@@ -126,7 +126,7 @@ def get_stream_url(data_url):
 
     streamurl = None
 
-    url = API_ENDPOINT + "/api/v1.4/get/content/live-streams/" + data_url + "?include=quality"
+    url = API_ENDPOINT + "/api/v1.7/get/content/live-streams/" + data_url + "?include=quality"
     opener = get_url_opener()
     opener.addheaders.append(('Authorization', "Bearer " + config.get_setting(constants.TOKEN)))
     response = opener.open(url)
