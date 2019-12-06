@@ -18,6 +18,7 @@ from xbmcaddon import Addon
 
 data_dir = Addon().getAddonInfo('profile').decode('utf-8')
 
+riga = pytz.timezone('Europe/Riga')
 
 def indent(elem, level=0):
     # http://effbot.org/zone/element-lib.htm#prettyprint
@@ -52,8 +53,8 @@ def mark_updated():
 
 def merge_data(obj1, obj2):
     utils.log("Merging data")
-    for item in obj2["items"]:
-        obj1["items"].append(item)
+    for item in obj2["data"]:
+        obj1["data"].append(item)
     return obj1
 
 
@@ -63,47 +64,49 @@ def build_epg():
     today = datetime.date.today().strftime("%Y-%m-%d")
     tomorrow = (datetime.date.today() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
 
+    channels = api.get_channels()
+
     today_data = api.get_epg(today)
     tomorrow_data = api.get_epg(tomorrow)
 
     json_object = merge_data(today_data, tomorrow_data)
 
-    channels = set()
-
     xml_tv = ElementTree.Element("tv")
-
-    for item in json_object["items"]:
-        channels.add(item["channel"])
-
-    channel_data = api.get_channels()
+    m3u = "#EXTM3U tvg-shift=0\n"
 
     for channel in channels:
+        m3u += "#EXTINF:-1 tvg-id=\"" + channel["id"] + "\" tvg-name=\"" + channel["name"] + "\" tvg-logo=\"" \
+               + channel["logo"] + "\" group-title=\"Lattelecom\"," + channel["name"] + "\n"
+        m3u += "plugin://lattelecomtv/?play=true&data_url=" + channel["id"] + "\n"
 
-        ch = next(item for item in channel_data if item["id"] == channel)
-        if ch is None:
+    for channel in json_object["included"]:
+
+        if channel["type"] != "channels":
             continue
 
-        xml_chan = ElementTree.SubElement(xml_tv, "channel", id=channel)
-        ElementTree.SubElement(xml_chan, "display-name", lang="en").text = ch["name"]
+        xml_chan = ElementTree.SubElement(xml_tv, "channel", id=channel["id"])
+        ElementTree.SubElement(xml_chan, "display-name", lang="en").text = channel["attributes"]["title"]
 
-    riga = pytz.timezone('Europe/Riga')
-    offset_seconds = riga.utcoffset(datetime.datetime.utcnow()).seconds
-    offset_hours = offset_seconds / 3600.0
+    offset_hours=riga_offset_hours()
     offset = "%s%02d00" % (("" if offset_hours < 0 else "+"), offset_hours)
     date_format_xml = "%Y%m%d%H%M%S " + offset
 
-    for item in json_object["items"]:
+    for item in json_object["data"]:
+
+        if item["type"] != "epgs":
+            continue
+
         xml_prog = ElementTree.SubElement(xml_tv, "programme",
                                           start=riga.localize(
-                                              utils.dateFromString(item["time_start"], DATE_FORMAT_JSON)).strftime(
+                                              utils.dateFromUnix(float(item["attributes"]["unix-start"]))).strftime(
                                               date_format_xml),
                                           stop=riga.localize(
-                                              utils.dateFromString(item["time_stop"], DATE_FORMAT_JSON)).strftime(
-                                              date_format_xml), channel=item["channel"])
-        ElementTree.SubElement(xml_prog, "title", lang="en").text = item["title"]
-        ElementTree.SubElement(xml_prog, "desc", lang="en").text = item["description"]
-        ElementTree.SubElement(xml_prog, "category", lang="en").text = item["category1"]
-        ElementTree.SubElement(xml_prog, "icon", src=api.API_ENDPOINT + "/" + item["url"])
+                                              utils.dateFromUnix(float(item["attributes"]["unix-stop"]))).strftime(
+                                              date_format_xml), channel=item["relationships"]["channel"]["data"]["id"])
+        ElementTree.SubElement(xml_prog, "title", lang="en").text = item["attributes"]["title"]
+        ElementTree.SubElement(xml_prog, "desc", lang="en").text = item["attributes"]["description"]
+        ElementTree.SubElement(xml_prog, "category", lang="en").text = item["attributes"]["category"]
+        ElementTree.SubElement(xml_prog, "icon", src=api.API_BASEURL + "/" + item["attributes"]["poster-url"])
 
     indent(xml_tv)
     xml_str = ElementTree.tostring(xml_tv, encoding="utf-8", method="xml")
@@ -112,24 +115,15 @@ def build_epg():
     text_file.write('<?xml version="1.0" encoding="utf-8" ?>' + "\n" + xml_str)
     text_file.close()
 
-    m3u = "#EXTM3U tvg-shift=0\n"
-
-    for channel in sorted(channels):
-
-        ch = next(item for item in channel_data if item["id"] == channel)
-        if ch is None:
-            continue
-
-        m3u += "#EXTINF:-1 tvg-id=\"" + channel + "\" tvg-name=\"" + ch["name"] + "\" tvg-logo=\"" + ch[
-            "logo"] + "\" group-title=\"Lattelecom\"," + ch["name"] + "\n"
-        m3u += "plugin://lattelecomtv/?play=true&data_url=" + channel + "\n"
-
     text_file = open(config.DATADIR + M3U_FILE, "w")
     text_file.write(m3u.encode("utf-8"))
     text_file.close()
 
     mark_updated()
 
+def riga_offset_hours():
+    offset_seconds = riga.utcoffset(datetime.datetime.utcnow()).seconds
+    return offset_seconds / 3600.0
 
 def configure_epg():
     text_file = open(config.DATADIR + "../pvr.iptvsimple/settings.xml", "w")
@@ -138,7 +132,7 @@ def configure_epg():
     <setting id="epgCache">true</setting>
     <setting id="epgPath">{epg_path}</setting>
     <setting id="epgPathType">0</setting>
-    <setting id="epgTimeShift" default="true">3</setting>
+    <setting id="epgTimeShift" default="true">{offset}</setting>
     <setting id="epgTSOverride" default="true">false</setting>
     <setting id="epgUrl" default="true"></setting>
     <setting id="logoBaseUrl">https://manstv.lattelecom.tv/</setting>
@@ -151,7 +145,7 @@ def configure_epg():
     <setting id="m3uUrl" default="true"></setting>
     <setting id="startNum">1</setting>
 </settings>
-    """.format(epg_path=config.DATADIR + EPG_FILE, m3u_path=config.DATADIR + M3U_FILE))
+    """.format(epg_path=config.DATADIR + EPG_FILE, offset=riga_offset_hours(), m3u_path=config.DATADIR + M3U_FILE))
     text_file.close()
 
     xbmcgui.Dialog().ok("Configuration overwritten", "Please restart Kodi for changes to take effect")

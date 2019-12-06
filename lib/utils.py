@@ -70,6 +70,12 @@ def dateFromString(string, fmt=DATE_FORMAT):
         res = datetime.datetime(*(time.strptime(string, fmt)[0:6]))
     return res
 
+def dateFromUnix(string):
+    return datetime.datetime.utcfromtimestamp(string)
+
+def unixTSFromDateString(string):
+    dt=datetime.datetime(*(time.strptime(string, "%Y-%m-%d")[:6]))
+    return int((dt - datetime.datetime(1970, 1, 1)).total_seconds())
 
 def stringFromDateNow():
     return datetime.datetime.now().strftime(DATE_FORMAT)

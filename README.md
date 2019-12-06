@@ -63,8 +63,27 @@ Addon settings section
 ![Alt text](screenshots/settings.png?raw=true "Addon settings in Kodi")
 
 ## Development
-Running tests:
-`python -m unittest test.test_get_url_opener`
+
+### Setup
+
+Use Python 2
+
+`virtualenv -p /usr/bin/python2.7 venv/`
+
+Activate the environment
+
+`source venv/bin/activate`
+
+Install dependencies
+
+```
+pip install mock
+pip install pytz
+pip install Kodistubs
+```
+
+### Running tests:
+`python -m unittest discover`
 
 Accepted environment variables:
 
