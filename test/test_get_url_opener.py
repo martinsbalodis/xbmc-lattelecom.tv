@@ -56,7 +56,9 @@ class TestGet_url_opener(TestCase):
         try:
             api.login()
         except Exception as e:
-            self.fail(e.message)
+            self.fail(e)
+
+        print "Successfully logged in"
 
     def test_get_channels(self):
         patch_config()
@@ -65,7 +67,9 @@ class TestGet_url_opener(TestCase):
             channels = api.get_channels()
             self.assertGreater(len(channels), 0)
         except Exception as e:
-            self.fail(e.message)
+            self.fail(e)
+
+        print "Successfully retrieved channel list"
 
     @unittest.skipIf(skip_regional, REGION_NOTICE)
     def test_get_stream_url(self):
@@ -77,7 +81,9 @@ class TestGet_url_opener(TestCase):
             stream_url = api.get_stream_url("101")
             self.assertIsNotNone(stream_url)
         except Exception as e:
-            self.fail(e.message)
+            self.fail(e)
+
+        print "Successfully retrieved stream URL"
 
     def test_get_epg(self):
         patch_config()
@@ -88,4 +94,9 @@ class TestGet_url_opener(TestCase):
 
             self.assertIsNotNone(epg_data)
         except Exception as e:
-            self.fail(e.message)
+            self.fail(e)
+
+        print "Successfully got EPG data"
+
+if __name__ == '__main__':
+    unittest.main()

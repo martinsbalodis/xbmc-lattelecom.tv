@@ -17,8 +17,8 @@ def make_channel_list():
         for c in channels:
             listitem = xbmcgui.ListItem(label=c['name'])
             listitem.setInfo('video', {'title': c['name']})
-            listitem.setIconImage('https://manstv.lattelecom.tv/' + c['logo'])
-            listitem.setThumbnailImage('https://manstv.lattelecom.tv/' + c['thumb'])
+            listitem.setIconImage(api.API_BASEURL + "/" + c['logo'])
+            listitem.setThumbnailImage(api.API_BASEURL + "/" + c['thumb'])
             listitem.setProperty('IsPlayable', "true")
 
             # Build the URL for the program, including the list_info
