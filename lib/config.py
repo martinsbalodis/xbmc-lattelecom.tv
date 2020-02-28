@@ -7,7 +7,6 @@ import xbmc
 import xbmcaddon
 import xbmcplugin
 
-import api
 import constants
 import utils
 from exceptions import ApiError
@@ -55,6 +54,57 @@ def get_setting_bool(key):
     return xbmcaddon.Addon(APPID).getSettingBool(key)
 
 
+class XConfig:
+    def __init__(self):
+        pass
+
+    @property
+    def USERNAME(self): return get_setting(constants.USERNAME)
+    @USERNAME.setter
+    def USERNAME(self, val): set_setting(constants.USERNAME, val)
+
+    @property
+    def PASSWORD(self): return get_setting(constants.PASSWORD)
+    @PASSWORD.setter
+    def PASSWORD(self, val): set_setting(constants.PASSWORD, val)
+
+    @property
+    def TOKEN(self): return get_setting(constants.TOKEN)
+    @TOKEN.setter
+    def TOKEN(self, val): set_setting(constants.TOKEN, val)
+
+    @property
+    def QUALITY(self): return get_setting(constants.QUALITY)
+    @QUALITY.setter
+    def QUALITY(self, val): self.__UID = set_setting(constants.QUALITY, val)
+
+    @property
+    def QUALITYX(self): 
+        quality = self.QUALITY
+        if utils.isEmpty(quality): quality = 'hd'
+        if quality == 'hd': quality = "0-hd"
+        elif quality == 'hq': quality = "1-hq"
+        elif quality == 'mq': quality = "2-mq"
+        elif quality == 'lq': quality = "3-lq"
+        return quality
+
+    @property
+    def UID(self): return get_setting(constants.UID)
+    @UID.setter
+    def UID(self, val): self.__UID = set_setting(constants.UID, val)
+
+    @property
+    def LAST_LOGIN(self): return get_setting(constants.LAST_LOGIN)
+    @LAST_LOGIN.setter
+    def LAST_LOGIN(self, val): set_setting(constants.LAST_LOGIN, val)
+
+    @property
+    def LOGGED_IN(self): return get_setting_bool(constants.LOGGED_IN)
+    @LOGGED_IN.setter
+    def LOGGED_IN(self, val): set_setting_bool(constants.LOGGED_IN, val)
+
+X = XConfig()
+
 def get_unique_id():
     if get_setting(constants.UID) is not None and get_setting(constants.UID) != "":
         return get_setting(constants.UID)
@@ -85,41 +135,6 @@ def configCheck():
         set_setting_bool(constants.CONFIGURED, True)
         showSettingsGui()
         return
-
-
-def login_check():
-    if not get_setting_bool(constants.LOGGED_IN):
-        # Ask for credentials if they are missing
-        if utils.isEmpty(get_setting(constants.USERNAME)) or utils.isEmpty(get_setting(constants.PASSWORD)):
-            showSettingsGui()
-            return
-        # Log in and show a status notification
-        try:
-            api.login()
-            showGuiNotification("Login successful")
-        except ApiError as e:
-            showGuiNotification(str(e))
-            utils.log(str(e))
-            pass
-        return
-
-    # Periodically (1 day) force update token because it can expire
-    t1 = utils.dateFromString(get_setting(constants.LAST_LOGIN))
-    t2 = datetime.datetime.now()
-    interval = 1
-    update = abs(t2 - t1) > datetime.timedelta(days=interval)
-    if update is True:
-        utils.log("Refreshing Lattelecom login token")
-        set_setting(constants.LAST_LOGIN, utils.stringFromDateNow())
-        try:
-            api.login(force=True)
-        except ApiError as e:
-            showGuiNotification(str(e))
-            utils.log(str(e))
-            pass
-    else:
-        utils.log("Lattelecom login token seems quite fresh.")
-
 
 def logout():
     utils.log("Clearing token")

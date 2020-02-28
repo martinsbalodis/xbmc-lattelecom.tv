@@ -24,7 +24,22 @@ if __name__ == "__main__":
 
     if len(params) == 0:
         channels.make_channel_list()
-    elif params.has_key("play"):
-        channels.play_channel()
+    elif params.has_key("mode"):
+        mode = params["mode"]
+        if mode == "gotoarchive":
+            chid = params["chid"]
+            channels.make_channel_date_list(chid)
+        elif mode == "getarchive":
+            chid = params["chid"]
+            sdt = params["date"]
+            dt = utils.dateFromString(sdt, '%Y%m%d')
+            channels.make_channel_event_list(chid, dt)
+        elif mode == "play":
+            chid = params["chid"]
+            channels.play_channel(chid)
+        elif mode == "playarchive":
+            eventid = params["eventid"]
+            channels.play_archive(eventid)
+          
     else:
         utils.log("Unknown url: " + sys.argv[0])

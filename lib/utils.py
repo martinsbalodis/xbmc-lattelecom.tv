@@ -2,12 +2,26 @@ import sys
 import textwrap
 import traceback
 import urllib
-import xbmc
 import datetime
 import time
 import _strptime
 
+import pytz
+riga = pytz.timezone('Europe/Riga')
+
 import config
+
+import xbmc
+import xbmcplugin
+import xbmcaddon
+
+
+__scriptid__ = "lattelecomtv"
+addon = xbmcaddon.Addon(id=__scriptid__)
+addon_handle = int(sys.argv[1])
+xbmcplugin.setContent(addon_handle, 'movies')
+get_setting = addon.getSetting
+
 
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
 
@@ -61,6 +75,8 @@ def isEmpty(param):
     if param is None or param == "":
         return True
 
+def dateTounixTS(date):
+    return int((date - datetime.datetime(1970,1,1)).total_seconds())
 
 def dateFromString(string, fmt=DATE_FORMAT):
     # Workaround from https://forum.kodi.tv/showthread.php?tid=112916
@@ -75,7 +91,27 @@ def dateFromUnix(string):
 
 def unixTSFromDateString(string):
     dt=datetime.datetime(*(time.strptime(string, "%Y-%m-%d")[:6]))
-    return int((dt - datetime.datetime(1970, 1, 1)).total_seconds())
+    return dateTounixTS(dt)
 
 def stringFromDateNow():
     return datetime.datetime.now().strftime(DATE_FORMAT)
+
+
+def set_content(content):
+    xbmcplugin.setContent(int(sys.argv[1]), content)
+
+def set_view(content):
+    if content:
+        set_content(content)
+    view = get_setting('%s_view' % content)
+    if view and view != '0':
+        xbmc.executebuiltin('Container.SetViewMode(%s)' % view)
+
+def color_str(color, string):
+    return '[COLOR'+ color + ']' + string + '[/COLOR]'
+
+def color_str_yellow(string): return color_str('yellow', string)
+def color_str_pink(string): return color_str('pink', string)
+def color_str_orange(string): return color_str('orange', string)
+def color_str_greenyellow(string): return color_str('greenyellow', string)
+

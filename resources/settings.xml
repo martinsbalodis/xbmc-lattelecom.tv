@@ -4,6 +4,7 @@
 		<setting label="Lattelecom authentication" type="lsep"/>
 		<setting label="Username" type="text" id="username" default=""/>
 		<setting label="Password" type="text" id="password" option="hidden" enable="!eq(-1,)" default=""/>
+		<setting label="Quality" type="select" id="quality" values="lq|mq|hq|hd"/>
 		<setting id="action_clear" type="action" label="Clear authorization token"
 		         action="XBMC.RunScript(lattelecomtv,refresh_token)"/>
 		<setting type="bool" id="logged_in" default="false" visible="false"/>

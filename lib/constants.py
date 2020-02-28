@@ -1,6 +1,7 @@
 CONFIGURED = "configured"
 USERNAME = "username"
 PASSWORD = "password"
+QUALITY = "quality"
 LOGGED_IN = "logged_in"
 LAST_LOGIN = "last_login"
 TOKEN = "token"
