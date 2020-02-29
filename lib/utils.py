@@ -16,13 +16,6 @@ import xbmcplugin
 import xbmcaddon
 
 
-__scriptid__ = "lattelecomtv"
-addon = xbmcaddon.Addon(id=__scriptid__)
-addon_handle = int(sys.argv[1])
-xbmcplugin.setContent(addon_handle, 'movies')
-get_setting = addon.getSetting
-
-
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
 
 
@@ -103,7 +96,7 @@ def set_content(content):
 def set_view(content):
     if content:
         set_content(content)
-    view = get_setting('%s_view' % content)
+    view = config.get_setting('%s_view' % content)
     if view and view != '0':
         xbmc.executebuiltin('Container.SetViewMode(%s)' % view)
 

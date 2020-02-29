@@ -188,7 +188,7 @@ def get_stream_url(data_url):
         if stream["type"] != "live-streams":
             continue
 
-        url = stream["attributes"]["stream-url"] + "&auth_token=app_" + config.X.TOKEN
+        url = stream["attributes"]["stream-url"]
 
         if "_lq.stream" in stream["id"]:
             stream_links["3-lq"] = url

@@ -40,6 +40,8 @@ if __name__ == "__main__":
         elif mode == "playarchive":
             eventid = params["eventid"]
             channels.play_archive(eventid)
-          
+    elif params.has_key("play"):
+        chid = params["data_url"]
+        channels.play_channel(chid)
     else:
         utils.log("Unknown url: " + sys.argv[0])
