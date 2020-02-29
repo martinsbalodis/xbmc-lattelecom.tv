@@ -16,13 +16,13 @@ except:
 
 API_BASEURL = "https://manstv.lattelecom.tv"
 API_ENDPOINT = API_BASEURL + "/api/v1.7"
+USER_AGENT = 'Shortcut.lv for Android TV v1.11.9 / Dalvik/2.1.0 (Linux; U; Android 7.1.1; sdk_google_atv_x86 Build/NYC)'
 
 def get_url_opener(referrer=None):
     opener = urllib2.build_opener()
     # Headers from Nexus 6P
     opener.addheaders = [
-        ('User-Agent',
-         'Shortcut.lv for Android TV v1.11.9 / Dalvik/2.1.0 (Linux; U; Android 7.1.1; sdk_google_atv_x86 Build/NYC)'),
+        ('User-Agent', USER_AGENT),
         ('Connection', 'keep-alive'),
     ]
     return opener

@@ -34,6 +34,8 @@ if __name__ == "__main__":
             sdt = params["date"]
             dt = utils.dateFromString(sdt, '%Y%m%d')
             channels.make_channel_event_list(chid, dt)
+        elif mode == "refresh":
+            channels.make_channel_list()
         elif mode == "play":
             chid = params["chid"]
             channels.play_channel(chid)

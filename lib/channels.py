@@ -1,12 +1,12 @@
 import sys
 import datetime
+import urllib
 
 import xbmcgui
 import xbmcplugin
 
 import api
 import utils
-
 
 def make_channel_list():
     utils.log("url-make-channel " + sys.argv[0])
@@ -36,9 +36,11 @@ def make_channel_list():
 
             # Build the URL for the program, including the list_info
             url = "%s?mode=play&chid=%s" % (sys.argv[0], c['id'])
+            refresh_url = "%s?mode=refresh" % (sys.argv[0])
             archive_url = "%s?mode=gotoarchive&chid=%s" % (sys.argv[0], c['id'])
             
             contextMenuItems = []
+            contextMenuItems.append(('Refresh', 'Container.Update(' + refresh_url + ')'))
             contextMenuItems.append(('Archive', 'Container.Update(' + archive_url + ')'))
             listitem.addContextMenuItems(contextMenuItems, replaceItems=False)
 
@@ -108,6 +110,7 @@ def make_channel_event_list(chid, date):
 
 def play_channel(chid):
     utils.log("url play channel: " + sys.argv[0])
+    user_agent_x = 'User-Agent=' + urllib.quote_plus(api.USER_AGENT)
 
     try:
         handle = int(sys.argv[1])
@@ -116,9 +119,10 @@ def play_channel(chid):
         playitem = xbmcgui.ListItem(path=rtmp_url)
         playitem.setProperty('inputstreamaddon', 'inputstream.adaptive')
         playitem.setProperty('inputstream.adaptive.manifest_type', 'hls')
+        playitem.setProperty('inputstream.adaptive.stream_headers', user_agent_x)
         playitem.setContentLookup(False)
         xbmcplugin.setResolvedUrl(handle, True, playitem)
-
+       
     except:
         d = xbmcgui.Dialog()
         msg = utils.dialog_error("Unable to fetch listing")
@@ -128,6 +132,7 @@ def play_channel(chid):
 
 def play_archive(eventid):
     utils.log("url play archive: " + sys.argv[0])
+    user_agent_x = 'User-Agent=' + urllib.quote_plus(api.USER_AGENT)
 
     try:
         handle = int(sys.argv[1])
@@ -136,6 +141,7 @@ def play_archive(eventid):
         playitem = xbmcgui.ListItem(path=rtmp_url)
         playitem.setProperty('inputstreamaddon', 'inputstream.adaptive')
         playitem.setProperty('inputstream.adaptive.manifest_type', 'hls')
+        playitem.setProperty('inputstream.adaptive.stream_headers', user_agent_x)
         playitem.setContentLookup(False)
         xbmcplugin.setResolvedUrl(handle, True, playitem)
 

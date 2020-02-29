@@ -103,6 +103,11 @@ class XConfig:
     @LOGGED_IN.setter
     def LOGGED_IN(self, val): set_setting_bool(constants.LOGGED_IN, val)
 
+    @property
+    def SERVICE_ENABLED(self): return get_setting_bool(constants.SERVICE_ENABLED)
+    @SERVICE_ENABLED.setter
+    def SERVICE_ENABLED(self, val): set_setting_bool(constants.SERVICE_ENABLED, val)
+
 X = XConfig()
 
 def get_unique_id():
