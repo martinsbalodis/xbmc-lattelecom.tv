@@ -10,6 +10,7 @@ import pytz
 riga = pytz.timezone('Europe/Riga')
 
 import config
+import pyperclip
 
 import xbmc
 import xbmcplugin
@@ -68,8 +69,15 @@ def isEmpty(param):
     if param is None or param == "":
         return True
 
+def dateLocatToUtc(date):
+    local_dt = riga.localize(date, is_dst=None)
+    return local_dt.astimezone(pytz.utc).replace(tzinfo=None)
+
 def dateTounixTS(date):
     return int((date - datetime.datetime(1970,1,1)).total_seconds())
+
+def dateTounixUtcTS(date):
+    return dateTounixTS(dateLocatToUtc(date))
 
 def dateFromString(string, fmt=DATE_FORMAT):
     # Workaround from https://forum.kodi.tv/showthread.php?tid=112916
@@ -108,3 +116,5 @@ def color_str_pink(string): return color_str('pink', string)
 def color_str_orange(string): return color_str('orange', string)
 def color_str_greenyellow(string): return color_str('greenyellow', string)
 
+
+def copy_to_clipboard(string): pyperclip.copy(string)

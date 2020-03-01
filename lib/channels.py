@@ -8,6 +8,7 @@ import xbmcplugin
 import api
 import utils
 
+
 def make_channel_list():
     utils.log("url-make-channel " + sys.argv[0])
     utils.set_view('files')
@@ -30,8 +31,8 @@ def make_channel_list():
 
             listitem = xbmcgui.ListItem(label=label)
             listitem.setInfo('video', {'title': label, 'plot':desc})
-            listitem.setIconImage(api.API_BASEURL + "/" + c['logo'])
-            listitem.setThumbnailImage(api.API_BASEURL + "/" + c['thumb'])
+            listitem.setArt({'icon':api.API_BASEURL + "/" + c['logo'],
+                             'thumb':api.API_BASEURL + "/" + c['thumb']})
             listitem.setProperty('IsPlayable', "true")
 
             # Build the URL for the program, including the list_info
@@ -55,6 +56,7 @@ def make_channel_list():
         d.ok(*msg)
         utils.log_error()
 
+
 def make_channel_date_list(chid):
     utils.log("url-make-channel-datelist " + sys.argv[0])
     utils.set_view('files')
@@ -63,7 +65,7 @@ def make_channel_date_list(chid):
         dt = datetime.date.today()
         for i in range(7):
             dt2 = dt + datetime.timedelta(days=-i)
-            sdt = dt2.strftime('%a %d.%b')
+            sdt = dt2.strftime('%A %d. %B')
             urldt = dt2.strftime('%Y%m%d')
             listitem = xbmcgui.ListItem(label=sdt)
             listitem.setProperty('IsPlayable', "false")
@@ -75,6 +77,7 @@ def make_channel_date_list(chid):
         msg = utils.dialog_error("Unable to fetch listing")
         d.ok(*msg)
         utils.log_error()
+
 
 def make_channel_event_list(chid, date):
     utils.log("make_channel_event_list " + sys.argv[0])
@@ -92,10 +95,18 @@ def make_channel_event_list(chid, date):
             time2 = utils.color_str_greenyellow(time2)
             label = '{} - {}'.format(time, event['title'])
             desc = '{} - {}\n{}'.format(time2, event['title'], event['desc'])
+            start2 = event['start'].strftime('%d %b')
+            title = start2 + ' ' + event['title']
 
             listitem = xbmcgui.ListItem(label=label)
-            listitem.setInfo('video', {'title': label, 'plot':desc})
+            listitem.setInfo('video', {'title': title, 'plot':desc})
+            listitem.setArt({'poster':event['poster']})
             listitem.setProperty('IsPlayable', "true")
+            
+            contextMenuItems = []
+            cm_url = "%s?mode=copyarchivelink&eventid=%s" % (sys.argv[0], event['id'])
+            contextMenuItems.append(('Copy Link to Clipboard', 'RunPlugin(' + cm_url + ')'))
+            listitem.addContextMenuItems(contextMenuItems, replaceItems=False)
 
             url = "%s?mode=playarchive&eventid=%s" % (sys.argv[0], event['id'])
 
@@ -107,6 +118,7 @@ def make_channel_event_list(chid, date):
         msg = utils.dialog_error("Unable to fetch listing")
         d.ok(*msg)
         utils.log_error()
+
 
 def play_channel(chid):
     utils.log("url play channel: " + sys.argv[0])
@@ -145,6 +157,22 @@ def play_archive(eventid):
         playitem.setContentLookup(False)
         xbmcplugin.setResolvedUrl(handle, True, playitem)
 
+    except:
+        d = xbmcgui.Dialog()
+        msg = utils.dialog_error("Unable to fetch listing")
+        d.ok(*msg)
+        utils.log_error()
+
+
+def copy_archive_url(eventid):
+    utils.log("copy_archive_url: " + sys.argv[0])
+    user_agent_x = 'User-Agent=' + urllib.quote_plus(api.USER_AGENT)
+    try:
+        handle = int(sys.argv[1])
+        rtmp_url = api.get_archive_url(eventid)
+        utils.copy_to_clipboard(rtmp_url)
+        d = xbmcgui.Dialog()
+        d.ok('','Done!')
     except:
         d = xbmcgui.Dialog()
         msg = utils.dialog_error("Unable to fetch listing")

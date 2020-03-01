@@ -290,7 +290,7 @@ def get_epg(date):
 def get_epg_for_channel(date, chid):
     utils.log("Getting EPG for date " + date.strftime('%Y-%m-%d'))
 
-    timestampFrom = utils.dateTounixTS(date)
+    timestampFrom = utils.dateTounixUtcTS(date)
     timestampTo=int(timestampFrom+86400)
 
     url = API_ENDPOINT + "/get/content/epgs/?include=channel&page[size]=100000&filter[channel]=" + str(chid) + "&filter[utTo]="+str(timestampTo)+"&filter[utFrom]="+str(timestampFrom)
@@ -357,6 +357,7 @@ def prepare_epg(epg_data, bychannel=True):
         event["stop"] = time_stop
         event["title"] = title.encode('utf8')
         event["desc"] = desc.encode('utf8')
+        event["poster"] = API_BASEURL + '/' + item["attributes"]["poster-url"]
 
         if bychannel:
             events[chid] = event
