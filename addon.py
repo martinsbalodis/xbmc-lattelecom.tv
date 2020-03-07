@@ -1,6 +1,6 @@
 import sys
-
-from lib import utils, channels, config, constants, epg
+from lib import utils, channels, config, constants, epg, cache
+import xbmc
 
 utils.log('Initialised')
 
@@ -34,8 +34,6 @@ if __name__ == "__main__":
             sdt = params["date"]
             dt = utils.dateFromString(sdt, '%Y%m%d')
             channels.make_channel_event_list(chid, dt)
-        elif mode == "refresh":
-            channels.make_channel_list()
         elif mode == "play":
             chid = params["chid"]
             channels.play_channel(chid)
@@ -45,6 +43,8 @@ if __name__ == "__main__":
         elif mode == "copyarchivelink":
             eventid = params["eventid"]
             channels.copy_archive_url(eventid)
+        elif mode == "reset_cache":
+            cache.reset_cache()
     elif params.has_key("play"):
         chid = params["data_url"]
         channels.play_channel(chid)

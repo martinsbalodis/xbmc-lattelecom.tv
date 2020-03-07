@@ -10,9 +10,12 @@ import utils
 
 
 def make_channel_list():
-    utils.log("url-make-channel " + sys.argv[0])
+    utils.log("make_channel_list " + sys.argv[0])
     utils.set_view('files')
-
+    
+    REFRESH = 'special://home/addons/lattelecomtv/lib/refresh.py'
+    REFRESH_CMD = 'RunScript(%s)' % REFRESH
+    
     try:
         channels = api.get_channels()
         epgnow = api.prepare_epg_now()
@@ -37,11 +40,10 @@ def make_channel_list():
 
             # Build the URL for the program, including the list_info
             url = "%s?mode=play&chid=%s" % (sys.argv[0], c['id'])
-            refresh_url = "%s?mode=refresh" % (sys.argv[0])
             archive_url = "%s?mode=gotoarchive&chid=%s" % (sys.argv[0], c['id'])
             
             contextMenuItems = []
-            contextMenuItems.append(('Refresh', 'Container.Update(' + refresh_url + ')'))
+            contextMenuItems.append(('Refresh', REFRESH_CMD))
             contextMenuItems.append(('Archive', 'Container.Update(' + archive_url + ')'))
             listitem.addContextMenuItems(contextMenuItems, replaceItems=False)
 
@@ -58,7 +60,7 @@ def make_channel_list():
 
 
 def make_channel_date_list(chid):
-    utils.log("url-make-channel-datelist " + sys.argv[0])
+    utils.log("make_channel_date_list " + sys.argv[0])
     utils.set_view('files')
     try:
         ok = True
@@ -171,11 +173,12 @@ def copy_archive_url(eventid):
         handle = int(sys.argv[1])
         rtmp_url = api.get_archive_url(eventid)
         utils.copy_to_clipboard(rtmp_url)
-        d = xbmcgui.Dialog()
-        d.ok('','Done!')
+        utils.notify(msg='Done!')
+        #d = xbmcgui.Dialog()
+        #d.ok('','Done!')
     except:
         d = xbmcgui.Dialog()
-        msg = utils.dialog_error("Unable to fetch listing")
+        msg = utils.dialog_error("Unable to fetch url")
         d.ok(*msg)
         utils.log_error()
 

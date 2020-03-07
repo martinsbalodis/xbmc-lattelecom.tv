@@ -108,6 +108,11 @@ class XConfig:
     @SERVICE_ENABLED.setter
     def SERVICE_ENABLED(self, val): set_setting_bool(constants.SERVICE_ENABLED, val)
 
+    @property
+    def CACHE_ENABLED(self): return get_setting_bool(constants.CACHE_ENABLED)
+    @CACHE_ENABLED.setter
+    def CACHE_ENABLED(self, val): set_setting_bool(constants.CACHE_ENABLED, val)
+
 X = XConfig()
 
 def get_unique_id():

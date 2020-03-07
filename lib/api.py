@@ -1,11 +1,13 @@
 import json
 import urllib
 import urllib2
+import time
+import datetime
+
 import config
 import utils
 import constants
-import time
-import datetime
+import cache
 
 from exceptions import ApiError
 
@@ -114,7 +116,11 @@ def login(force=False):
     return True
 
 
+
+@cache.cache_function(cache_limit=24)
 def get_channels():
+    utils.log("Call: get_channels")
+
     url = API_ENDPOINT + '/get/content/packages?include=channels'
     opener = get_url_opener()
     response = opener.open(url)
@@ -151,10 +157,10 @@ def get_channels():
             'logo': item["attributes"]["logo-url"],
             'thumb': item["attributes"]["epg-default-poster-url"]
         })
-
+    
     return channels
 
-
+@cache.cache_function(cache_limit=1)
 def get_stream_url(data_url):
     utils.log("Getting URL for channel: " + data_url + " quality: " + config.X.QUALITYX)
     login_check()
@@ -209,6 +215,7 @@ def get_stream_url(data_url):
 
     return streamurl
 
+@cache.cache_function(cache_limit=1)
 def get_archive_url(eventid):
     utils.log("Getting URL for event: " + eventid)
     login_check()
@@ -263,16 +270,19 @@ def get_archive_url(eventid):
 
     return streamurl
 
-def get_epg(date):
-    utils.log("Getting EPG for date: " + date)
+@cache.cache_function(cache_limit=24)
+def get_epg_a(date_from, date_to, chid = ''):
+    utils.log("get_epg_a: [%s]-[%s] [%s]" %(str(date_from), str(date_to), chid))
 
-    timestampFrom = utils.unixTSFromDateString(date)
-    timestampTo=int(timestampFrom+86400)
+    timestampFrom = utils.dateTounixUtcTS(date_from)
+    timestampTo = utils.dateTounixUtcTS(date_to)
 
     url = API_ENDPOINT + "/get/content/epgs/?include=channel&page[size]=100000&filter[utTo]="+str(timestampTo)+"&filter[utFrom]="+str(timestampFrom)
+    if chid != '' and not chid is None:
+        url = url + "&filter[channel]=" + str(chid)
+        
     opener = get_url_opener()
     response = opener.open(url)
-
     response_text = response.read()
     response_code = response.getcode()
 
@@ -286,53 +296,24 @@ def get_epg(date):
         raise ApiError("Did not receive json, something wrong: " + response_text)
 
     return json_object
+
+
+def get_epg(date):
+    utils.log("Getting EPG for date: " + str(date))
+    dateto = date + datetime.timedelta(seconds=86400)
+    return get_epg_a(date, dateto)
+
 
 def get_epg_for_channel(date, chid):
-    utils.log("Getting EPG for date " + date.strftime('%Y-%m-%d'))
+    utils.log("get_epg_for_channel " + str(date) + " " + chid)
+    dateto = date + datetime.timedelta(seconds=86400)
+    return get_epg_a(date, dateto, chid)
 
-    timestampFrom = utils.dateTounixUtcTS(date)
-    timestampTo=int(timestampFrom+86400)
-
-    url = API_ENDPOINT + "/get/content/epgs/?include=channel&page[size]=100000&filter[channel]=" + str(chid) + "&filter[utTo]="+str(timestampTo)+"&filter[utFrom]="+str(timestampFrom)
-    opener = get_url_opener()
-    response = opener.open(url)
-
-    response_text = response.read()
-    response_code = response.getcode()
-
-    if response_code != 200:
-        raise ApiError("Got bad response from EPG service. Response code: " + response_code)
-
-    json_object = None
-    try:
-        json_object = json.loads(response_text)
-    except ValueError, e:
-        raise ApiError("Did not receive json, something wrong: " + response_text)
-
-    return json_object
 
 def get_epg_now():
     utils.log("Getting EPG for now playing")
-
-    timestamp = int(time.time())
-
-    url = API_ENDPOINT + "/get/content/epgs/?include=channel&page[size]=100000&filter[utTo]="+str(timestamp)+"&filter[utFrom]="+str(timestamp)
-    opener = get_url_opener()
-    response = opener.open(url)
-
-    response_text = response.read()
-    response_code = response.getcode()
-
-    if response_code != 200:
-        raise ApiError("Got bad response from EPG service. Response code: " + response_code)
-
-    json_object = None
-    try:
-        json_object = json.loads(response_text)
-    except ValueError, e:
-        raise ApiError("Did not receive json, something wrong: " + response_text)
-
-    return json_object
+    dateutc = datetime.datetime.utcfromtimestamp(time.time())
+    return get_epg_a(dateutc, dateutc)
 
 
 def prepare_epg(epg_data, bychannel=True):
@@ -345,8 +326,8 @@ def prepare_epg(epg_data, bychannel=True):
         chid = item["relationships"]["channel"]["data"]["id"]
         time_start = utils.dateFromUnix(float(item["attributes"]["unix-start"]))
         time_stop = utils.dateFromUnix(float(item["attributes"]["unix-stop"]))
-        time_start = utils.riga.fromutc(time_start)
-        time_stop = utils.riga.fromutc(time_stop)
+        time_start = utils.dateFromUtcToLocal(time_start)
+        time_stop = utils.dateFromUtcToLocal(time_stop)
         title = item["attributes"]["title"]
         desc = item["attributes"]["description"]
         
@@ -366,10 +347,36 @@ def prepare_epg(epg_data, bychannel=True):
 
     return events
 
-def prepare_epg_now():
-    epg_data = get_epg_now()
-    return prepare_epg(epg_data, True)
+def filter_pepg(pepg = {}, bychid = False, filterchannel = '', 
+                filtertimefrom = None, filtertimeto = None):
+    events = {}
+    for key, val in pepg.items():
+        chid = val['chid']
+        time_start = val['start']
+        time_stop = val['stop']
+        if not utils.isEmpty(filterchannel) and chid != filterchannel: 
+            continue
+        if not filtertimefrom is None and not filtertimeto is None:
+            if time_start > filtertimeto or time_stop < filtertimefrom:
+                continue
+        if bychid:
+            events[chid] = val
+        else:
+            events[key] = val
+    return events
 
+def prepare_epg_now():
+    utils.log("prepare_epg_now")
+    #epg_data = get_epg_now()
+    date_now = datetime.datetime.fromtimestamp(time.time())
+    date_today = utils.dateToDateTime(datetime.date.today())
+    sdate = date_today.strftime('%Y-%m-%d')
+    epg_data = get_epg_for_channel(date_today, '')
+    if epg_data is None: return {}
+    pepg = prepare_epg(epg_data, False)
+    pepg = filter_pepg(pepg, True, '', date_now, date_now)
+    return pepg
+        
 def prepare_epg_for_channel(date, chid):
     utils.log("Preparing EPG for channel")
     epg_data = get_epg_for_channel(date, chid)
