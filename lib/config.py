@@ -54,7 +54,7 @@ def get_setting_bool(key):
     return xbmcaddon.Addon(APPID).getSettingBool(key)
 
 
-class XConfig:
+class XConfig(object):
     def __init__(self):
         pass
 

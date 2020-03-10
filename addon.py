@@ -23,10 +23,15 @@ if __name__ == "__main__":
     params = utils.get_url(params_str)
 
     if len(params) == 0:
+        #channels.make_main_menu()
         channels.make_channel_list()
     elif params.has_key("mode"):
         mode = params["mode"]
-        if mode == "gotoarchive":
+        if mode == "livechannels":
+            channels.make_channel_list()
+        elif mode == "archivechannels":
+            channels.make_archive_channel_list()
+        elif mode == "gotoarchive":
             chid = params["chid"]
             channels.make_channel_date_list(chid)
         elif mode == "getarchive":

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import sys
 import datetime
 import urllib
@@ -8,14 +9,30 @@ import xbmcplugin
 import api
 import utils
 
+def make_main_menu():
+    utils.log("make_main_menu " + sys.argv[0])
+    utils.set_view('files')
+
+    listitem = xbmcgui.ListItem(label=u'Tiešreide'.encode('utf-8'))
+    listitem.setProperty('IsPlayable', "false")
+    url = "%s?mode=livechannels" % (sys.argv[0])
+    ok = xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=url, listitem=listitem, isFolder=True)
+
+    listitem = xbmcgui.ListItem(label=u'Arhīvs'.encode('utf-8'))
+    listitem.setProperty('IsPlayable', "false")
+    url = "%s?mode=archivechannels" % (sys.argv[0])
+    ok = xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=url, listitem=listitem, isFolder=True)
+
+    xbmcplugin.endOfDirectory(handle=int(sys.argv[1]), succeeded=ok)
+
 
 def make_channel_list():
     utils.log("make_channel_list " + sys.argv[0])
-    utils.set_view('files')
-    
+    utils.set_view('videos')
+
     REFRESH = 'special://home/addons/lattelecomtv/lib/refresh.py'
     REFRESH_CMD = 'RunScript(%s)' % REFRESH
-    
+
     try:
         channels = api.get_channels()
         epgnow = api.prepare_epg_now()
@@ -47,8 +64,40 @@ def make_channel_list():
             contextMenuItems.append(('Archive', 'Container.Update(' + archive_url + ')'))
             listitem.addContextMenuItems(contextMenuItems, replaceItems=False)
 
-            # Add the program item to the list
-            ok = xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=url, listitem=listitem, isFolder=False,
+            ok = xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=url, listitem=listitem, isFolder=False)
+
+        xbmcplugin.endOfDirectory(handle=int(sys.argv[1]), succeeded=ok, updateListing=True, cacheToDisc=False)
+        
+    except:
+        d = xbmcgui.Dialog()
+        msg = utils.dialog_error("Unable to fetch listing")
+        d.ok(*msg)
+        utils.log_error()
+
+
+def make_archive_channel_list():
+    utils.log("make_archive_channel_list " + sys.argv[0])
+    utils.set_view('files')
+
+    try:
+        channels = api.get_channels()
+ 
+        ok = True
+        for c in channels:
+            name = c['name'].encode('utf8')
+            name = utils.color_str_yellow(name)
+            name = name + u' (arhīvs)'.encode('utf8')
+
+            listitem = xbmcgui.ListItem(label=name)
+            listitem.setArt({'icon':api.API_BASEURL + "/" + c['logo'],
+                             'thumb':api.API_BASEURL + "/" + c['thumb']})
+            listitem.setProperty('IsPlayable', "false")
+
+            url = "%s?mode=gotoarchive&chid=%s" % (sys.argv[0], c['id'])
+            
+            ok = xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=url, 
+                                             listitem=listitem, 
+                                             isFolder=True,
                                              totalItems=len(channels))
 
         xbmcplugin.endOfDirectory(handle=int(sys.argv[1]), succeeded=ok)
@@ -83,7 +132,7 @@ def make_channel_date_list(chid):
 
 def make_channel_event_list(chid, date):
     utils.log("make_channel_event_list " + sys.argv[0])
-    utils.set_view('files')
+    utils.set_view('videos')
 
     try:
         epg = api.prepare_epg_for_channel(date, chid)
@@ -174,8 +223,6 @@ def copy_archive_url(eventid):
         rtmp_url = api.get_archive_url(eventid)
         utils.copy_to_clipboard(rtmp_url)
         utils.notify(msg='Done!')
-        #d = xbmcgui.Dialog()
-        #d.ok('','Done!')
     except:
         d = xbmcgui.Dialog()
         msg = utils.dialog_error("Unable to fetch url")

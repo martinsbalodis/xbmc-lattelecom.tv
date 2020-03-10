@@ -20,6 +20,7 @@ API_BASEURL = "https://manstv.lattelecom.tv"
 API_ENDPOINT = API_BASEURL + "/api/v1.7"
 USER_AGENT = 'Shortcut.lv for Android TV v1.11.9 / Dalvik/2.1.0 (Linux; U; Android 7.1.1; sdk_google_atv_x86 Build/NYC)'
 
+
 def get_url_opener(referrer=None):
     opener = urllib2.build_opener()
     # Headers from Nexus 6P
@@ -29,59 +30,51 @@ def get_url_opener(referrer=None):
     ]
     return opener
 
+
 def login_check():
     utils.log("login_check: LAST_LOGIN: " + config.X.LAST_LOGIN)
-
-    if not config.X.LOGGED_IN:
-        # Ask for credentials if they are missing
-        if utils.isEmpty(config.X.USERNAME) or utils.isEmpty(config.X.PASSWORD):
-            config.showSettingsGui()
-            return
-        # Log in and show a status notification
-        try:
-            login()
-            config.showGuiNotification("Login successful")
-        except ApiError as e:
-            config.showGuiNotification(str(e))
-            utils.log(str(e))
-            pass
+    
+    if utils.isEmpty(config.X.USERNAME) or utils.isEmpty(config.X.PASSWORD):
+        config.X.LOGGED_IN = False
+        config.X.TOKEN = ""
+        config.showSettingsGui()
         return
-
+        
     # Periodically (1 day) force update token because it can expire
-    update = False
-    if utils.isEmpty(config.X.LAST_LOGIN):
-        update = True
-    else:
+    update = not config.X.LOGGED_IN or utils.isEmpty(config.X.TOKEN)
+    update = update or utils.isEmpty(config.X.LAST_LOGIN)
+    if not update:
         t1 = utils.dateFromString(config.X.LAST_LOGIN)
         t2 = datetime.datetime.now()
         interval = 1
         update = abs(t2 - t1) > datetime.timedelta(days=interval)
     if update is True:
         utils.log("Refreshing Lattelecom login token")
-        config.X.LAST_LOGIN = utils.stringFromDateNow()
         try:
             login(force=True)
         except ApiError as e:
             config.showGuiNotification(str(e))
             utils.log(str(e))
-            pass
     else:
         utils.log("Lattelecom login token seems quite fresh.")
 
 
 def login(force=False):
-    utils.log("User: " + config.X.USERNAME + "; Logged in: " + str(config.X.LOGGED_IN) + "; Token: " + config.X.TOKEN)
+    utils.log("login for User: " + config.X.USERNAME + "; Logged in: " + str(config.X.LOGGED_IN) + "; Token: " + config.X.TOKEN)
 
     if force is False and not utils.isEmpty(config.X.TOKEN) and config.X.LOGGED_IN:
         utils.log("Already logged in")
-        return
+        return True
+
+    config.X.LOGGED_IN = False
+    config.X.TOKEN = ""
 
     opener = get_url_opener()
 
     values = {'id': config.X.USERNAME,
               'uid': config.get_unique_id(),
               'password': config.X.PASSWORD}
-    if values['id'] is None or values['id'] == '': return False
+    if utils.isEmpty(values['id']): return False
 
     response = opener.open(API_ENDPOINT + '/post/user/users', urllib.urlencode(values))
 
@@ -102,22 +95,21 @@ def login(force=False):
     try:
         json_object = json.loads(response_text)
     except ValueError, e:
-        config.X.LOGGED_IN = False
-        config.X.TOKEN = ""
         utils.log("Did not receive json, something wrong: " + response_text)
         raise ApiError("Failed to log in, API error")
 
     utils.log(response_text)
 
-    config.X.LOGGED_IN = True
     config.X.TOKEN = json_object["data"]["attributes"]["token"]
+    config.X.LOGGED_IN = True
+    config.X.LAST_LOGIN = utils.stringFromDateNow()
 
+    config.showGuiNotification("Login successful")
     utils.log("Login success! Token: " + config.X.TOKEN)
     return True
 
 
-
-@cache.cache_function(cache_limit=24)
+@cache.cache_function(cache_limit=240)
 def get_channels():
     utils.log("Call: get_channels")
 
@@ -159,6 +151,7 @@ def get_channels():
         })
     
     return channels
+
 
 @cache.cache_function(cache_limit=1)
 def get_stream_url(data_url):
@@ -215,6 +208,7 @@ def get_stream_url(data_url):
 
     return streamurl
 
+
 @cache.cache_function(cache_limit=1)
 def get_archive_url(eventid):
     utils.log("Getting URL for event: " + eventid)
@@ -270,7 +264,8 @@ def get_archive_url(eventid):
 
     return streamurl
 
-@cache.cache_function(cache_limit=24)
+
+@cache.cache_function(cache_limit=192)
 def get_epg_a(date_from, date_to, chid = ''):
     utils.log("get_epg_a: [%s]-[%s] [%s]" %(str(date_from), str(date_to), chid))
 
@@ -298,8 +293,9 @@ def get_epg_a(date_from, date_to, chid = ''):
     return json_object
 
 
-def get_epg(date):
-    utils.log("Getting EPG for date: " + str(date))
+def get_epg(datestr):
+    utils.log("Getting EPG for date: " + str(datestr))
+    date = utils.dateFromString(datestr, "%Y-%m-%d")
     dateto = date + datetime.timedelta(seconds=86400)
     return get_epg_a(date, dateto)
 
@@ -347,6 +343,7 @@ def prepare_epg(epg_data, bychannel=True):
 
     return events
 
+
 def filter_pepg(pepg = {}, bychid = False, filterchannel = '', 
                 filtertimefrom = None, filtertimeto = None):
     events = {}
@@ -365,6 +362,7 @@ def filter_pepg(pepg = {}, bychid = False, filterchannel = '',
             events[key] = val
     return events
 
+
 def prepare_epg_now():
     utils.log("prepare_epg_now")
     #epg_data = get_epg_now()
@@ -376,6 +374,7 @@ def prepare_epg_now():
     pepg = prepare_epg(epg_data, False)
     pepg = filter_pepg(pepg, True, '', date_now, date_now)
     return pepg
+        
         
 def prepare_epg_for_channel(date, chid):
     utils.log("Preparing EPG for channel")
