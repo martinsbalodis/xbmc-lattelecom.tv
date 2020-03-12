@@ -11,15 +11,6 @@ if __name__ == '__main__':
 
     config.configCheck()
 
-    # Force login token refresh upon Kodi start
-    # not necessary
-    #try:
-    #    api.login(force=True)
-    #except exceptions.ApiError as e:
-    #    config.showGuiNotification(str(e))
-    #    utils.log(str(e))
-    #    pass
-
     while not monitor.abortRequested():
 
         if epg.should_update():

@@ -69,13 +69,12 @@ def login(force=False):
     config.X.LOGGED_IN = False
     config.X.TOKEN = ""
 
-    opener = get_url_opener()
-
     values = {'id': config.X.USERNAME,
               'uid': config.get_unique_id(),
               'password': config.X.PASSWORD}
     if utils.isEmpty(values['id']): return False
 
+    opener = get_url_opener()
     response = opener.open(API_ENDPOINT + '/post/user/users', urllib.urlencode(values))
 
     response_code = response.getcode()
@@ -111,7 +110,7 @@ def login(force=False):
 
 @cache.cache_function(cache_limit=240)
 def get_channels():
-    utils.log("Call: get_channels")
+    utils.log("get_channels")
 
     url = API_ENDPOINT + '/get/content/packages?include=channels'
     opener = get_url_opener()
@@ -153,9 +152,9 @@ def get_channels():
     return channels
 
 
-@cache.cache_function(cache_limit=1)
+@cache.cache_function(cache_limit=3)
 def get_stream_url(data_url):
-    utils.log("Getting URL for channel: " + data_url + " quality: " + config.X.QUALITYX)
+    utils.log("get_stream_url for channel: " + data_url + " quality: " + config.X.QUALITYX)
     login_check()
 
     streamurl = None
@@ -209,9 +208,9 @@ def get_stream_url(data_url):
     return streamurl
 
 
-@cache.cache_function(cache_limit=1)
+@cache.cache_function(cache_limit=3)
 def get_archive_url(eventid):
-    utils.log("Getting URL for event: " + eventid)
+    utils.log("get_archive_url for event: " + eventid)
     login_check()
 
     streamurl = None
@@ -294,7 +293,7 @@ def get_epg_a(date_from, date_to, chid = ''):
 
 
 def get_epg(datestr):
-    utils.log("Getting EPG for date: " + str(datestr))
+    utils.log("get_epg date: " + str(datestr))
     date = utils.dateFromString(datestr, "%Y-%m-%d")
     dateto = date + datetime.timedelta(seconds=86400)
     return get_epg_a(date, dateto)
@@ -307,13 +306,13 @@ def get_epg_for_channel(date, chid):
 
 
 def get_epg_now():
-    utils.log("Getting EPG for now playing")
+    utils.log("get_epg_now")
     dateutc = datetime.datetime.utcfromtimestamp(time.time())
     return get_epg_a(dateutc, dateutc)
 
 
 def prepare_epg(epg_data, bychannel=True):
-    utils.log("Preparing EPG now")
+    utils.log("prepare_epg")
     events = {}
     for item in epg_data["data"]:
         if item["type"] != "epgs":
@@ -365,7 +364,6 @@ def filter_pepg(pepg = {}, bychid = False, filterchannel = '',
 
 def prepare_epg_now():
     utils.log("prepare_epg_now")
-    #epg_data = get_epg_now()
     date_now = datetime.datetime.fromtimestamp(time.time())
     date_today = utils.dateToDateTime(datetime.date.today())
     sdate = date_today.strftime('%Y-%m-%d')
@@ -377,6 +375,12 @@ def prepare_epg_now():
         
         
 def prepare_epg_for_channel(date, chid):
-    utils.log("Preparing EPG for channel")
-    epg_data = get_epg_for_channel(date, chid)
-    return prepare_epg(epg_data, False)
+    utils.log("prepare_epg_for_channel")
+    dateto = date + datetime.timedelta(seconds=86400)
+    sts, epg_data = cache._get_func('get_epg_a',(date, dateto, ''), {}, 192)
+    if sts:
+        pepg = prepare_epg(epg_data, False)
+        return filter_pepg(pepg, False, chid)
+    else:
+        epg_data = get_epg_for_channel(date, chid)
+        return prepare_epg(epg_data, False)

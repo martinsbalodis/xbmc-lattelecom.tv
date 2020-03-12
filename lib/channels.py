@@ -9,6 +9,7 @@ import xbmcplugin
 import api
 import utils
 
+
 def make_main_menu():
     utils.log("make_main_menu " + sys.argv[0])
     utils.set_view('files')
@@ -50,12 +51,11 @@ def make_channel_list():
             desc = label + '\n' + event['desc']
 
             listitem = xbmcgui.ListItem(label=label)
-            listitem.setInfo('video', {'title': label, 'plot':desc})
+            listitem.setInfo('video', {'title': label, 'mediatype':'video', 'plot':desc})
             listitem.setArt({'icon':api.API_BASEURL + "/" + c['logo'],
                              'thumb':api.API_BASEURL + "/" + c['thumb']})
             listitem.setProperty('IsPlayable', "true")
 
-            # Build the URL for the program, including the list_info
             url = "%s?mode=play&chid=%s" % (sys.argv[0], c['id'])
             archive_url = "%s?mode=gotoarchive&chid=%s" % (sys.argv[0], c['id'])
             
@@ -86,7 +86,7 @@ def make_archive_channel_list():
         for c in channels:
             name = c['name'].encode('utf8')
             name = utils.color_str_yellow(name)
-            name = name + u' (arhīvs)'.encode('utf8')
+            name = name + u' - (arhīvs)'.encode('utf8')
 
             listitem = xbmcgui.ListItem(label=name)
             listitem.setArt({'icon':api.API_BASEURL + "/" + c['logo'],
@@ -140,8 +140,7 @@ def make_channel_event_list(chid, date):
         for event in sorted(epg.values(), key = lambda x: x['start']):
             start = event['start'].strftime('%H:%M')
             stop = event['stop'].strftime('%H:%M')
-            time = start
-            time = utils.color_str_greenyellow(time)
+            time = utils.color_str_greenyellow(start)
             time2 = start + '-' + stop
             time2 = utils.color_str_greenyellow(time2)
             label = '{} - {}'.format(time, event['title'])
@@ -150,7 +149,7 @@ def make_channel_event_list(chid, date):
             title = start2 + ' ' + event['title']
 
             listitem = xbmcgui.ListItem(label=label)
-            listitem.setInfo('video', {'title': title, 'plot':desc})
+            listitem.setInfo('video', {'title': title, 'mediatype':'video', 'plot':desc})
             listitem.setArt({'poster':event['poster']})
             listitem.setProperty('IsPlayable', "true")
             

@@ -158,7 +158,10 @@ def notify(header=None, msg='', duration=2000, sound=None, icon_path=None):
 
 
 def color_str(color, string):
-    return '[COLOR'+ color + ']' + string + '[/COLOR]'
+    if config.X.COLORED_TEXT:
+        return '[COLOR'+ color + ']' + string + '[/COLOR]'
+    else:
+        return string
 
 def color_str_yellow(string): return color_str('yellow', string)
 def color_str_pink(string): return color_str('pink', string)

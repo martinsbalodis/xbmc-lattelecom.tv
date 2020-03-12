@@ -113,6 +113,11 @@ class XConfig(object):
     @CACHE_ENABLED.setter
     def CACHE_ENABLED(self, val): set_setting_bool(constants.CACHE_ENABLED, val)
 
+    @property
+    def COLORED_TEXT(self): return get_setting_bool(constants.COLORED_TEXT)
+    @COLORED_TEXT.setter
+    def COLORED_TEXT(self, val): set_setting_bool(constants.COLORED_TEXT, val)
+
 X = XConfig()
 
 def get_unique_id():

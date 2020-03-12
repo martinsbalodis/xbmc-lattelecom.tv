@@ -6,6 +6,7 @@
 		<setting label="Password" type="text" id="password" option="hidden" enable="!eq(-1,)" default=""/>
 		<setting label="Quality" type="select" id="quality" values="lq|mq|hq|hd"/>
         <setting label="Service Enabled" id="service_enabled" type="bool" default="true"/>
+        <setting label="Colored Text" id="colored_text" type="bool" default="true"/>
 		<setting id="action_clear" type="action" label="Clear authorization token"
 		         action="XBMC.RunScript(lattelecomtv,refresh_token)"/>
 		<setting type="bool" id="cache_enabled" default="true" visible="false"/>
