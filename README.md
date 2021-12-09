@@ -1,4 +1,4 @@
-# Lattelecom.tv / Shortcut.lv live TV XBMC/Kodi addon [![Build Status](https://travis-ci.org/Janhouse/xbmc-lattelecom.tv.svg?branch=master)](https://travis-ci.org/Janhouse/xbmc-lattelecom.tv)
+# Tet+ / Lattelecom.tv / Shortcut.lv live TV XBMC/Kodi addon [![Build Status](https://travis-ci.org/Janhouse/xbmc-lattelecom.tv.svg?branch=master)](https://travis-ci.org/Janhouse/xbmc-lattelecom.tv)
 
 This is a community maintained unofficial Lattelecom.tv/Shortcut.lv XBMC/Kodi addon.
 **To use it, you must have an account on Lattelecom.tv**.
