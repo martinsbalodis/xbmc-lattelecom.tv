@@ -2,14 +2,30 @@ import sys
 import textwrap
 import traceback
 import urllib
-import xbmc
 import datetime
 import time
 import _strptime
 
+import pytz
+riga = pytz.timezone('Europe/Riga')
+
 import config
+import pyperclip
+
+import xbmc
+import xbmcplugin
+import xbmcaddon
+import xbmcgui
+
 
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
+
+execute_builtin = xbmc.executebuiltin
+
+try:
+    addon = xbmcaddon.Addon()
+except RuntimeError:
+    addon = xbmcaddon.Addon('lattelecomtv')  # RunScript
 
 
 def log(s):
@@ -61,6 +77,25 @@ def isEmpty(param):
     if param is None or param == "":
         return True
 
+def dateLocatToUtc(date):
+    local_dt = riga.localize(date, is_dst=None)
+    return local_dt.astimezone(pytz.utc).replace(tzinfo=None)
+
+def dateFromLocalToUtc(local_datetime):
+    now_timestamp = time.time()
+    offset = datetime.datetime.fromtimestamp(now_timestamp) - datetime.datetime.utcfromtimestamp(now_timestamp)
+    return local_datetime - offset
+
+def dateFromUtcToLocal(utc_datetime):
+    now_timestamp = time.time()
+    offset = datetime.datetime.fromtimestamp(now_timestamp) - datetime.datetime.utcfromtimestamp(now_timestamp)
+    return utc_datetime + offset
+
+def dateTounixTS(date):
+    return int((date - datetime.datetime(1970,1,1)).total_seconds())
+
+def dateTounixUtcTS(date):
+    return dateTounixTS(dateLocatToUtc(date))
 
 def dateFromString(string, fmt=DATE_FORMAT):
     # Workaround from https://forum.kodi.tv/showthread.php?tid=112916
@@ -75,7 +110,63 @@ def dateFromUnix(string):
 
 def unixTSFromDateString(string):
     dt=datetime.datetime(*(time.strptime(string, "%Y-%m-%d")[:6]))
-    return int((dt - datetime.datetime(1970, 1, 1)).total_seconds())
+    return dateTounixTS(dt)
 
 def stringFromDateNow():
     return datetime.datetime.now().strftime(DATE_FORMAT)
+
+def dateToDateTime(dt):
+    return datetime.datetime.combine(dt, datetime.datetime.min.time())
+
+def set_content(content):
+    xbmcplugin.setContent(int(sys.argv[1]), content)
+
+def set_view(content):
+    if content:
+        set_content(content)
+    view = config.get_setting('%s_view' % content)
+    if view and view != '0':
+        xbmc.executebuiltin('Container.SetViewMode(%s)' % view)
+
+def decode_utf8(string):
+    try:
+        return string.decode('utf-8')
+    except AttributeError:
+        return string
+
+def translate_path(path):
+    return decode_utf8(xbmc.translatePath(path))
+
+def get_id():
+    return addon.getAddonInfo('id')
+
+def get_name():
+    return addon.getAddonInfo('name')
+
+def get_icon():
+    return translate_path('special://home/addons/{0!s}/icon.png'.format(get_id()))
+
+def notify(header=None, msg='', duration=2000, sound=None, icon_path=None):
+    if header is None: header = get_name()
+    if sound is None: sound = False
+    if icon_path is None: icon_path = get_icon()
+    try:
+        xbmcgui.Dialog().notification(header, msg, icon_path, duration, sound)
+    except:
+        builtin = "Notification(%s,%s, %s, %s)" % (header, msg, duration, icon_path)
+        xbmc.executebuiltin(builtin)
+
+
+def color_str(color, string):
+    if config.X.COLORED_TEXT:
+        return '[COLOR'+ color + ']' + string + '[/COLOR]'
+    else:
+        return string
+
+def color_str_yellow(string): return color_str('yellow', string)
+def color_str_pink(string): return color_str('pink', string)
+def color_str_orange(string): return color_str('orange', string)
+def color_str_greenyellow(string): return color_str('greenyellow', string)
+
+
+def copy_to_clipboard(string): pyperclip.copy(string)

@@ -4,8 +4,12 @@
 		<setting label="Lattelecom authentication" type="lsep"/>
 		<setting label="Username" type="text" id="username" default=""/>
 		<setting label="Password" type="text" id="password" option="hidden" enable="!eq(-1,)" default=""/>
+		<setting label="Quality" type="select" id="quality" values="lq|mq|hq|hd"/>
+        <setting label="Service Enabled" id="service_enabled" type="bool" default="true"/>
+        <setting label="Colored Text" id="colored_text" type="bool" default="true"/>
 		<setting id="action_clear" type="action" label="Clear authorization token"
 		         action="XBMC.RunScript(lattelecomtv,refresh_token)"/>
+		<setting type="bool" id="cache_enabled" default="true" visible="false"/>
 		<setting type="bool" id="logged_in" default="false" visible="false"/>
 		<setting type="bool" id="configured" default="false" visible="false"/>
 		<setting id="last_login" type="text" default="1970-01-01 23:59:00.000000" visible="false"/>
@@ -13,6 +17,7 @@
 		         action="XBMC.RunScript(lattelecomtv,configure_epg)"/>
 		<setting id="action_rebuild_epg" type="action" label="Rebuild EPG data"
 		         action="XBMC.RunScript(lattelecomtv,rebuild_epg)"/>
+        <setting label="Reset Cache" id="reset_cache" type="action" action="RunPlugin(plugin://$ID/?mode=reset_cache)"/>
 		<setting id="last_epg" type="text" default="1970-01-01 23:59:00.000000" visible="false"/>
 	</category>
 </settings>
